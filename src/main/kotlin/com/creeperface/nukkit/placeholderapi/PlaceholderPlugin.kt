@@ -9,15 +9,17 @@ import com.creeperface.nukkit.placeholderapi.util.KotlinLibDownloader
  */
 class PlaceholderPlugin : PluginBase() {
 
+    private lateinit var api: PlaceholderAPIIml
+
     override fun onLoad() {
         if (!KotlinLibDownloader.check(this)) {
             throw PluginException("KotlinLib could not be found")
         }
 
-        PlaceholderAPIIml.createInstance(this)
+        api = PlaceholderAPIIml.createInstance(this)
     }
 
     override fun onEnable() {
-        (PlaceholderAPIIml.instance as PlaceholderAPIIml).init()
+        api.init()
     }
 }

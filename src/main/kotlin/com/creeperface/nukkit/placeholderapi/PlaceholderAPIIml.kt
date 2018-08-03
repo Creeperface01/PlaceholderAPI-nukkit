@@ -39,10 +39,12 @@ class PlaceholderAPIIml private constructor(private val plugin: PlaceholderPlugi
         private var initialized = false //stupid kotlin bug
 
         @JvmStatic
-        fun createInstance(plugin: PlaceholderPlugin): API {
+        fun createInstance(plugin: PlaceholderPlugin): PlaceholderAPIIml {
             Preconditions.checkState(!initialized, "PlaceholderAPI was already initialized")
 
-            instance = PlaceholderAPIIml(plugin)
+            val instance = PlaceholderAPIIml(plugin)
+
+            this.instance = instance
             initialized = true
             return instance
         }
@@ -50,6 +52,8 @@ class PlaceholderAPIIml private constructor(private val plugin: PlaceholderPlugi
 
     init {
         registerDefaultPlaceholders()
+
+        plugin.saveDefaultConfig()
         configuration = Configuration(plugin)
         configuration.load()
     }
