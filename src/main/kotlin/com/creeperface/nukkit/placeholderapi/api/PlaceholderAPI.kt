@@ -4,6 +4,8 @@ import cn.nukkit.Player
 import com.creeperface.nukkit.placeholderapi.PlaceholderAPIIml
 import com.creeperface.nukkit.placeholderapi.api.util.MatchedGroup
 import com.creeperface.nukkit.placeholderapi.api.util.matchPlaceholders
+import java.util.function.Function
+import java.util.function.Supplier
 
 /**
  * @author CreeperFace
@@ -16,18 +18,42 @@ interface PlaceholderAPI {
         }
     }
 
+    fun <T> staticPlaceholder(name: String, loader: Supplier<T?>, vararg aliases: String) {
+        staticPlaceholder(name, { loader.get() }, *aliases)
+    }
+
     fun <T> staticPlaceholder(name: String, loader: () -> T?, vararg aliases: String)
+
+    fun <T> staticPlaceholder(name: String, loader: Supplier<T?>, updateInterval: Int) {
+        staticPlaceholder(name, { loader.get() }, updateInterval)
+    }
 
     fun <T> staticPlaceholder(name: String, loader: () -> T?, updateInterval: Int) {
         staticPlaceholder(name, loader, updateInterval, false)
     }
 
+    fun <T> staticPlaceholder(name: String, loader: Supplier<T?>, updateInterval: Int = -1, autoUpdate: Boolean = false, vararg aliases: String) {
+        staticPlaceholder(name, { loader.get() }, updateInterval, autoUpdate, *aliases)
+    }
+
     fun <T> staticPlaceholder(name: String, loader: () -> T?, updateInterval: Int = -1, autoUpdate: Boolean = false, vararg aliases: String)
+
+    fun <T> visitorSensitivePlaceholder(name: String, loader: Function<Player, T?>, vararg aliases: String) {
+        visitorSensitivePlaceholder(name, { loader.apply(it) }, *aliases)
+    }
 
     fun <T> visitorSensitivePlaceholder(name: String, loader: (Player) -> T?, vararg aliases: String)
 
+    fun <T> visitorSensitivePlaceholder(name: String, loader: Function<Player, T?>, updateInterval: Int) {
+        visitorSensitivePlaceholder(name, { loader.apply(it) }, updateInterval)
+    }
+
     fun <T> visitorSensitivePlaceholder(name: String, loader: (Player) -> T?, updateInterval: Int) {
         visitorSensitivePlaceholder(name, loader, updateInterval, false)
+    }
+
+    fun <T> visitorSensitivePlaceholder(name: String, loader: Function<Player, T?>, updateInterval: Int = -1, autoUpdate: Boolean = false, vararg aliases: String) {
+        visitorSensitivePlaceholder(name, { loader.apply(it) }, updateInterval, autoUpdate, *aliases)
     }
 
     fun <T> visitorSensitivePlaceholder(name: String, loader: (Player) -> T?, updateInterval: Int = -1, autoUpdate: Boolean = false, vararg aliases: String)

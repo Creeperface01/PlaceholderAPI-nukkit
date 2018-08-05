@@ -150,7 +150,7 @@ class PlaceholderAPIIml private constructor(private val plugin: PlaceholderPlugi
 
     private fun registerDefaultPlaceholders() {
         visitorSensitivePlaceholder("player", { p -> p.name }, -1, false, "playername")
-        visitorSensitivePlaceholder("player_displayname", { p -> p.displayName }, 100)
+        visitorSensitivePlaceholder("player_displayname", { p -> p.displayName })
         visitorSensitivePlaceholder("player_uuid", { p -> p.uniqueId })
         visitorSensitivePlaceholder("player_ping", { p -> p.ping })
         visitorSensitivePlaceholder("player_level", { p -> p.level?.name })
@@ -187,7 +187,6 @@ class PlaceholderAPIIml private constructor(private val plugin: PlaceholderPlugi
         staticPlaceholder("server_cores", { runtime.availableProcessors() })
         staticPlaceholder("server_tps", { server.ticksPerSecondAverage })
         staticPlaceholder("server_uptime", { SimpleDateFormat((System.currentTimeMillis() - Nukkit.START_TIME).formatAsTime(configuration.timeFormat)) })
-
 
         staticPlaceholder("time", { SimpleDateFormat("${configuration.dateFormat} ${configuration.timeFormat}").format(Date()) }, 10)
     }

@@ -8,7 +8,7 @@ import cn.nukkit.Player
 open class StaticPlaceHolder<T>(name: String, updateInterval: Int, autoUpdate: Boolean, aliases: Set<String>, private val loader: () -> T?) : BasePlaceholder<T>(name, updateInterval, autoUpdate, aliases) {
 
     override fun loadValue(player: Player?): T? {
-        return loader.invoke()
+        return loader()
     }
 
     override fun forceUpdate(player: Player?): String {

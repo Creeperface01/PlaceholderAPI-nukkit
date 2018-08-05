@@ -37,7 +37,7 @@ open class VisitorSensitivePlaceholder<T>(name: String, updateInterval: Int, aut
         return safeValue()
     }
 
-    override fun loadValue(player: Player?) = if (player != null) loader.invoke(player) else null
+    override fun loadValue(player: Player?) = if (player != null) loader(player) else null
 
     override fun forceUpdate(player: Player?): String {
         if (player == null)
