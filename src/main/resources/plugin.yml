@@ -1,5 +1,5 @@
 name: PlaceholderAPI
-version: 1.1
+version: 1.2
 main: com.creeperface.nukkit.placeholderapi.PlaceholderPlugin
 api: ["1.0.0"]
 description: API which provides placeholder managment with easy usage
