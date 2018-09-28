@@ -5,6 +5,8 @@ import com.creeperface.nukkit.placeholderapi.PlaceholderAPIIml
 import com.creeperface.nukkit.placeholderapi.placeholder.StaticPlaceHolder
 import com.creeperface.nukkit.placeholderapi.placeholder.VisitorSensitivePlaceholder
 import com.google.common.base.Preconditions
+import java.util.function.Function
+import java.util.function.Supplier
 
 /**
  * @author CreeperFace
@@ -19,9 +21,9 @@ class PlaceholderBuilder<T>(private val name: String) {
 
     private val parameters = mutableSetOf<PlaceholderParameter>()
 
-    private var staticLoader: (() -> T?)? = null
+    private var staticLoader: (Supplier<T?>)? = null
 
-    private var visitorLoader: ((Player) -> T?)? = null
+    private var visitorLoader: (Function<Player, T?>)? = null
 
     private val aliases = mutableSetOf<String>()
 
@@ -39,9 +41,9 @@ class PlaceholderBuilder<T>(private val name: String) {
 
     fun aliases(vararg value: String) = apply { aliases.addAll(value) }
 
-    fun loader(value: () -> T?) = apply { staticLoader = value }
+    fun loader(value: Supplier<T?>) = apply { staticLoader = value }
 
-    fun laoder(value: (Player) -> T?) = apply { visitorLoader = value }
+    fun laoder(value: Function<Player, T?>) = apply { visitorLoader = value }
 
     fun build(api: PlaceholderAPIIml) {
         Preconditions.checkArgument(staticLoader == null && visitorLoader == null, "Loader not specified")

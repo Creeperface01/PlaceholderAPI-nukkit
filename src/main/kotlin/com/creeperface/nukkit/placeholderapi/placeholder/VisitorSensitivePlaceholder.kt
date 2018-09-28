@@ -1,43 +1,74 @@
 package com.creeperface.nukkit.placeholderapi.placeholder
 
 import cn.nukkit.Player
-import com.google.common.cache.CacheBuilder
-import java.util.concurrent.TimeUnit
+import cn.nukkit.Server
+import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderUpdateEvent
+import java.util.*
+import java.util.function.Function
 
 /**
  * @author CreeperFace
  */
-open class VisitorSensitivePlaceholder<T>(name: String, updateInterval: Int, autoUpdate: Boolean, aliases: Set<String>, private val loader: (Player) -> T?) : BasePlaceholder<T>(name, updateInterval, autoUpdate, aliases) {
+open class VisitorSensitivePlaceholder<T>(name: String, updateInterval: Int, autoUpdate: Boolean, aliases: Set<String>, private val loader: Function<Player, T?>) : BasePlaceholder<T>(name, updateInterval, autoUpdate, aliases) {
 
-    private val cache = CacheBuilder.newBuilder()
-            .maximumSize(100)
-            .expireAfterAccess(if (updateInterval > 0) (updateInterval * 50).toLong() else 30000, TimeUnit.MILLISECONDS)
-            .build<Player, Entry>()
+    private val cache = WeakHashMap<Player, Entry<T>>()
 
     override fun getValue(player: Player?): String {
         if (player == null)
             return name
 
-        val cached = cache.getIfPresent(player)
+        val cached = cache[player]
 
         cached?.let {
             if (updateInterval > 0 && System.currentTimeMillis() - cached.lastUpdate < intervalMillis()) {
-                return cached.value
+                return cached.value.toString()
+            } else {
+                cache.remove(player)
             }
         }
 
         value = null
 
-        if (checkForUpdate(player)) {
+        if (checkForUpdate(player, true)) {
             if (value != null) {
-                cache.put(player, Entry(value.toString()))
+                cache[player] = Entry(value)
             }
         }
 
         return safeValue()
     }
 
-    override fun loadValue(player: Player?) = if (player != null) loader(player) else null
+    override fun updateOrExecute(player: Player?, action: Runnable) {
+        var updated = false
+
+        val cached = cache[player]
+
+        var needUpdate = true
+
+        cached?.let {
+            if (updateInterval > 0 && System.currentTimeMillis() - cached.lastUpdate < intervalMillis()) {
+                needUpdate = false
+            }
+        }
+
+        if (needUpdate) {
+            value = null
+
+            if (checkForUpdate(player)) {
+                if (value != null) {
+                    cache[player] = Entry(value)
+                }
+
+                updated = true
+            }
+        }
+
+        if (!updated) {
+            action.run()
+        }
+    }
+
+    override fun loadValue(player: Player?) = if (player != null) loader.apply(player) else null
 
     override fun forceUpdate(player: Player?): String {
         if (player == null)
@@ -45,16 +76,40 @@ open class VisitorSensitivePlaceholder<T>(name: String, updateInterval: Int, aut
 
         if (checkForUpdate(player, true)) {
             if (value != null) {
-                cache.put(player, Entry(value.toString()))
+                cache[player] = Entry(value)
             }
         }
 
         return safeValue()
     }
 
+    override fun checkValueUpdate(value: T?, newVal: T?, player: Player?): Boolean {
+        if (player == null)
+            return false
+
+        val value = cache[player]?.value ?: value
+
+        if (!Objects.equals(value, newVal)) {
+            Server.getInstance().scheduler.scheduleTask {
+                run {
+                    val ev = PlaceholderUpdateEvent(this, value, newVal, player)
+                    server.pluginManager.callEvent(ev)
+                }
+
+                changeListeners.forEach { _, listener -> listener.onChange(value, newVal, player) }
+            }
+
+            this.value = newVal
+            lastUpdate = System.currentTimeMillis()
+            return true
+        }
+
+        return false
+    }
+
     override fun isVisitorSensitive() = true
 
     override fun readyToUpdate() = true
 
-    private data class Entry(val value: String, val lastUpdate: Long = System.currentTimeMillis())
+    data class Entry<T>(val value: T?, val lastUpdate: Long = System.currentTimeMillis())
 }

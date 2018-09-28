@@ -1,7 +1,8 @@
 package com.creeperface.nukkit.placeholderapi.util
 
-import cn.nukkit.math.NukkitMath
 import com.google.common.base.Preconditions
+import java.text.SimpleDateFormat
+import java.util.*
 
 /**
  * @author CreeperFace
@@ -19,13 +20,14 @@ fun <T : Number> T.round(accuracy: Int = 2): T {
 }
 
 fun Long.formatAsTime(format: String): String {
-    val time = this / 1000
-
-    val seconds = NukkitMath.floorDouble((time % 60L).toDouble())
-    val minutes = NukkitMath.floorDouble((time % 3600L / 60L).toDouble())
-    val hours = NukkitMath.floorDouble((time / 3600L).toDouble())
-
-    return format.replace("ss", seconds.toString()).replace("mm", minutes.toString()).replace("HH", hours.toString())
+//    val time = this / 1000
+//
+//    val seconds = NukkitMath.floorDouble((time % 60L).toDouble())
+//    val minutes = NukkitMath.floorDouble((time % 3600L / 60L).toDouble())
+//    val hours = NukkitMath.floorDouble((time / 3600L).toDouble())
+//
+//    return format.replace("ss", seconds.toString()).replace("mm", minutes.toString()).replace("HH", hours.toString())
+    return SimpleDateFormat(format).format(Date(this))
 }
 
 fun Long.bytes2MB() = this / 1024.0 / 1024.0

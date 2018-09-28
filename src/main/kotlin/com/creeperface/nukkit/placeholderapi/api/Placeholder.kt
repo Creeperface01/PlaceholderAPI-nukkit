@@ -48,6 +48,8 @@ interface Placeholder<T> {
 
     fun isVisitorSensitive() = false
 
+    fun updateOrExecute(player: Player?, action: Runnable)
+
     fun getType(): Type {
         val mySuperclass = this::class.java.genericSuperclass
         return (mySuperclass as ParameterizedType).actualTypeArguments[0]

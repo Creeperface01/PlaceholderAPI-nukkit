@@ -13,21 +13,30 @@ import java.util.*
  */
 abstract class BasePlaceholder<T>(override val name: String, override val updateInterval: Int, override val autoUpdate: Boolean, override val aliases: Set<String>) : Placeholder<T> {
 
-    private val changeListeners = mutableMapOf<Plugin, PlaceholderChangeListener<T>>()
+    protected val changeListeners = mutableMapOf<Plugin, PlaceholderChangeListener<T>>()
 
     protected var value: T? = null
     var lastUpdate: Long = 0
     val server: Server = Server.getInstance()
 
     override fun getValue(player: Player?): String {
-        val time = System.currentTimeMillis()
-
         if (value == null || readyToUpdate()) {
-            value = loadValue()
-            lastUpdate = time
+            checkForUpdate(player)
         }
 
         return safeValue()
+    }
+
+    override fun updateOrExecute(player: Player?, action: Runnable) {
+        var updated = false
+
+        if (value == null || readyToUpdate()) {
+            updated = checkForUpdate(player)
+        }
+
+        if (!updated) {
+            action.run()
+        }
     }
 
     protected abstract fun loadValue(player: Player? = null): T?
@@ -39,19 +48,22 @@ abstract class BasePlaceholder<T>(override val name: String, override val update
         if (!force && !readyToUpdate())
             return false
 
-        val time = System.currentTimeMillis()
-        val newVal = loadValue(player)
+        return checkValueUpdate(value, loadValue(player), player)
+    }
 
+    protected open fun checkValueUpdate(value: T?, newVal: T?, player: Player? = null): Boolean {
         if (!Objects.equals(value, newVal)) {
-            run {
-                val ev = PlaceholderUpdateEvent(this, value, newVal)
-                server.pluginManager.callEvent(ev)
+            Server.getInstance().scheduler.scheduleTask {
+                run {
+                    val ev = PlaceholderUpdateEvent(this, value, newVal, player)
+                    server.pluginManager.callEvent(ev)
+                }
+
+                changeListeners.forEach { _, listener -> listener.onChange(value, newVal, player) }
             }
 
-            changeListeners.forEach { _, listener -> listener.onChange(value, newVal) }
-
-            value = newVal
-            lastUpdate = time
+            this.value = newVal
+            lastUpdate = System.currentTimeMillis()
             return true
         }
 
