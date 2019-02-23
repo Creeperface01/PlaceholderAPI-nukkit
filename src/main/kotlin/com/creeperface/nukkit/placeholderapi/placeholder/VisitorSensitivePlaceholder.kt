@@ -4,16 +4,16 @@ import cn.nukkit.Player
 import cn.nukkit.Server
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderUpdateEvent
 import java.util.*
-import java.util.function.Function
+import java.util.function.BiFunction
 
 /**
  * @author CreeperFace
  */
-open class VisitorSensitivePlaceholder<T>(name: String, updateInterval: Int, autoUpdate: Boolean, aliases: Set<String>, private val loader: Function<Player, T?>) : BasePlaceholder<T>(name, updateInterval, autoUpdate, aliases) {
+open class VisitorSensitivePlaceholder<T>(name: String, updateInterval: Int, autoUpdate: Boolean, aliases: Set<String>, allowParameters: Boolean, private val loader: BiFunction<Player, Map<String, String>, T?>) : BasePlaceholder<T>(name, updateInterval, autoUpdate, aliases, allowParameters) {
 
     private val cache = WeakHashMap<Player, Entry<T>>()
 
-    override fun getValue(player: Player?): String {
+    override fun getValue(parameters: Map<String, String>, player: Player?): String {
         if (player == null)
             return name
 
@@ -29,7 +29,7 @@ open class VisitorSensitivePlaceholder<T>(name: String, updateInterval: Int, aut
 
         value = null
 
-        if (checkForUpdate(player, true)) {
+        if (checkForUpdate(parameters, player, true)) {
             if (value != null) {
                 cache[player] = Entry(value)
             }
@@ -38,7 +38,7 @@ open class VisitorSensitivePlaceholder<T>(name: String, updateInterval: Int, aut
         return safeValue()
     }
 
-    override fun updateOrExecute(player: Player?, action: Runnable) {
+    override fun updateOrExecute(parameters: Map<String, String>, player: Player?, action: Runnable) {
         var updated = false
 
         val cached = cache[player]
@@ -54,7 +54,7 @@ open class VisitorSensitivePlaceholder<T>(name: String, updateInterval: Int, aut
         if (needUpdate) {
             value = null
 
-            if (checkForUpdate(player)) {
+            if (checkForUpdate(parameters, player)) {
                 if (value != null) {
                     cache[player] = Entry(value)
                 }
@@ -68,13 +68,13 @@ open class VisitorSensitivePlaceholder<T>(name: String, updateInterval: Int, aut
         }
     }
 
-    override fun loadValue(player: Player?) = if (player != null) loader.apply(player) else null
+    override fun loadValue(parameters: Map<String, String>, player: Player?) = if (player != null) loader.apply(player, parameters) else null
 
-    override fun forceUpdate(player: Player?): String {
+    override fun forceUpdate(parameters: Map<String, String>, player: Player?): String {
         if (player == null)
             return name
 
-        if (checkForUpdate(player, true)) {
+        if (checkForUpdate(parameters, player, true)) {
             if (value != null) {
                 cache[player] = Entry(value)
             }

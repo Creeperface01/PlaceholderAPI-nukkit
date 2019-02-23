@@ -6,7 +6,6 @@ import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderChangeListener
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
-
 /**
  * @author CreeperFace
  */
@@ -28,17 +27,30 @@ interface Placeholder<T> {
     val updateInterval: Int
 
     /**
-     * If placeholder should be automatically updated
+     * Whether placeholder should be automatically updated
      */
     val autoUpdate: Boolean
 
+    /**
+     * Whether placeholder should take parameters when loading new value, s
+     */
+    val allowParameters: Boolean
+
     fun getValue() = getValue(null)
 
-    fun getValue(player: Player? = null): String
+    fun getValue(parameters: Map<String, String> = emptyMap()) = getValue(parameters, null)
 
-    fun forceUpdate() = forceUpdate(null)
+    fun getValue(player: Player? = null) = getValue(emptyMap(), player)
 
-    fun forceUpdate(player: Player? = null): String
+    fun getValue(parameters: Map<String, String> = emptyMap(), player: Player? = null): String
+
+    fun getDirectValue() = getDirectValue(null)
+
+    fun getDirectValue(player: Player? = null): T?
+
+    fun forceUpdate() = forceUpdate(player = null)
+
+    fun forceUpdate(parameters: Map<String, String> = emptyMap(), player: Player? = null): String
 
     fun addListener(plugin: Plugin, listener: PlaceholderChangeListener<T>)
 
@@ -48,7 +60,7 @@ interface Placeholder<T> {
 
     fun isVisitorSensitive() = false
 
-    fun updateOrExecute(player: Player?, action: Runnable)
+    fun updateOrExecute(parameters: Map<String, String> = emptyMap(), player: Player? = null, action: Runnable)
 
     fun getType(): Type {
         val mySuperclass = this::class.java.genericSuperclass

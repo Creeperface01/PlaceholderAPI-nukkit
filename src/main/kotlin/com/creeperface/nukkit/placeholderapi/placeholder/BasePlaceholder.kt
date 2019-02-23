@@ -11,7 +11,7 @@ import java.util.*
 /**
  * @author CreeperFace
  */
-abstract class BasePlaceholder<T>(override val name: String, override val updateInterval: Int, override val autoUpdate: Boolean, override val aliases: Set<String>) : Placeholder<T> {
+abstract class BasePlaceholder<T>(override val name: String, override val updateInterval: Int, override val autoUpdate: Boolean, override val aliases: Set<String>, override val allowParameters: Boolean) : Placeholder<T> {
 
     protected val changeListeners = mutableMapOf<Plugin, PlaceholderChangeListener<T>>()
 
@@ -19,19 +19,25 @@ abstract class BasePlaceholder<T>(override val name: String, override val update
     var lastUpdate: Long = 0
     val server: Server = Server.getInstance()
 
-    override fun getValue(player: Player?): String {
+    override fun getValue(parameters: Map<String, String>, player: Player?): String {
         if (value == null || readyToUpdate()) {
-            checkForUpdate(player)
+            checkForUpdate(player = player)
         }
 
         return safeValue()
     }
 
-    override fun updateOrExecute(player: Player?, action: Runnable) {
+    override fun getDirectValue(player: Player?): T? {
+        getValue(player)
+
+        return value
+    }
+
+    override fun updateOrExecute(parameters: Map<String, String>, player: Player?, action: Runnable) {
         var updated = false
 
         if (value == null || readyToUpdate()) {
-            updated = checkForUpdate(player)
+            updated = checkForUpdate(parameters, player)
         }
 
         if (!updated) {
@@ -39,16 +45,16 @@ abstract class BasePlaceholder<T>(override val name: String, override val update
         }
     }
 
-    protected abstract fun loadValue(player: Player? = null): T?
+    protected abstract fun loadValue(parameters: Map<String, String>, player: Player? = null): T?
 
     protected fun safeValue() = value?.toString() ?: name
 
     @JvmOverloads
-    protected fun checkForUpdate(player: Player?, force: Boolean = false): Boolean {
+    protected fun checkForUpdate(parameters: Map<String, String> = emptyMap(), player: Player? = null, force: Boolean = false): Boolean {
         if (!force && !readyToUpdate())
             return false
 
-        return checkValueUpdate(value, loadValue(player), player)
+        return checkValueUpdate(value, loadValue(parameters, player), player)
     }
 
     protected open fun checkValueUpdate(value: T?, newVal: T?, player: Player? = null): Boolean {
@@ -70,11 +76,9 @@ abstract class BasePlaceholder<T>(override val name: String, override val update
         return false
     }
 
-    abstract override fun forceUpdate(player: Player?): String
-
     override fun autoUpdate() {
         if (changeListeners.isNotEmpty())
-            checkForUpdate(null)
+            checkForUpdate()
     }
 
     override fun addListener(plugin: Plugin, listener: PlaceholderChangeListener<T>) {

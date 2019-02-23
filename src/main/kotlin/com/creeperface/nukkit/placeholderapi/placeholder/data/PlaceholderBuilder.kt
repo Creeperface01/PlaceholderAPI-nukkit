@@ -5,25 +5,27 @@ import com.creeperface.nukkit.placeholderapi.PlaceholderAPIIml
 import com.creeperface.nukkit.placeholderapi.placeholder.StaticPlaceHolder
 import com.creeperface.nukkit.placeholderapi.placeholder.VisitorSensitivePlaceholder
 import com.google.common.base.Preconditions
+import java.util.function.BiFunction
 import java.util.function.Function
-import java.util.function.Supplier
 
 /**
  * @author CreeperFace
  */
 class PlaceholderBuilder<T>(private val name: String) {
 
-    private var async = false
+    private var async = false //TODO: currently not implemented
 
     private var updateInterval = -1
 
     private var autoUpdate = false
 
-    private val parameters = mutableSetOf<PlaceholderParameter>()
+//    private val parameters = mutableSetOf<PlaceholderParameter>()
 
-    private var staticLoader: (Supplier<T?>)? = null
+    private var allowParameters = false
 
-    private var visitorLoader: (Function<Player, T?>)? = null
+    private var staticLoader: (Function<Map<String, String>, T?>)? = null
+
+    private var visitorLoader: (BiFunction<Player, Map<String, String>, T?>)? = null
 
     private val aliases = mutableSetOf<String>()
 
@@ -33,22 +35,27 @@ class PlaceholderBuilder<T>(private val name: String) {
 
     fun autoUpdate(value: Boolean) = apply { autoUpdate = value }
 
-    fun parameters(value: Collection<String>) = apply { parameters.addAll(value.map { PlaceholderParameter(it) }) }
+    fun allowParameters(value: Boolean): PlaceholderBuilder<T> {
+        this.allowParameters = value
+        return this
+    }
 
-    fun parameters(vararg value: String) = apply { parameters.addAll(value.map { PlaceholderParameter(it) }) }
+//    fun parameters(value: Collection<String>) = apply { parameters.addAll(value.map { PlaceholderParameter(it) }) }
+//
+//    fun parameters(vararg value: String) = apply { parameters.addAll(value.map { PlaceholderParameter(it) }) }
 
     fun aliases(value: Collection<String>) = apply { aliases.addAll(value) }
 
     fun aliases(vararg value: String) = apply { aliases.addAll(value) }
 
-    fun loader(value: Supplier<T?>) = apply { staticLoader = value }
+    fun loader(value: Function<Map<String, String>, T?>) = apply { staticLoader = value }
 
-    fun laoder(value: Function<Player, T?>) = apply { visitorLoader = value }
+    fun loader(value: BiFunction<Player, Map<String, String>, T?>) = apply { visitorLoader = value }
 
     fun build(api: PlaceholderAPIIml) {
         Preconditions.checkArgument(staticLoader == null && visitorLoader == null, "Loader not specified")
 
-        val placeholder = if (staticLoader == null) VisitorSensitivePlaceholder(name, updateInterval, autoUpdate, aliases, visitorLoader!!) else StaticPlaceHolder(name, updateInterval, autoUpdate, aliases, staticLoader!!)
+        val placeholder = if (staticLoader == null) VisitorSensitivePlaceholder(name, updateInterval, autoUpdate, aliases, allowParameters, visitorLoader!!) else StaticPlaceHolder(name, updateInterval, autoUpdate, aliases, allowParameters, staticLoader!!)
 
         api.registerPlaceholder(placeholder)
     }

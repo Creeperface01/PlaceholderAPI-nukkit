@@ -1,4 +1,4 @@
-package com.creeperface.nukkit.placeholderapi.placeholder.data
+package com.creeperface.nukkit.placeholderapi.api
 
 /**
  * @author CreeperFace

@@ -17,4 +17,7 @@
       <module name="PlaceholderAPI" target="1.8" />
     </bytecodeTargetLevel>
   </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_STRING" value="-Xjvm-default=enable" />
+  </component>
 </project>

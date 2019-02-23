@@ -8,7 +8,6 @@ import cn.nukkit.entity.Entity
 import cn.nukkit.event.Listener
 import com.creeperface.nukkit.placeholderapi.api.Placeholder
 import com.creeperface.nukkit.placeholderapi.api.util.MatchedGroup
-import com.creeperface.nukkit.placeholderapi.api.util.matchPlaceholders
 import com.creeperface.nukkit.placeholderapi.placeholder.StaticPlaceHolder
 import com.creeperface.nukkit.placeholderapi.placeholder.VisitorSensitivePlaceholder
 import com.creeperface.nukkit.placeholderapi.util.bytes2MB
@@ -16,6 +15,7 @@ import com.creeperface.nukkit.placeholderapi.util.formatAsTime
 import com.creeperface.nukkit.placeholderapi.util.round
 import com.google.common.base.Preconditions
 import java.util.*
+import java.util.function.BiFunction
 import java.util.function.Function
 import java.util.function.Supplier
 import kotlin.collections.HashMap
@@ -65,20 +65,12 @@ class PlaceholderAPIIml private constructor(private val plugin: PlaceholderPlugi
         plugin.server.scheduler.scheduleRepeatingTask(plugin, { updatePlaceholders() }, configuration.updateInterval)
     }
 
-    override fun <T> staticPlaceholder(name: String, loader: Supplier<T?>, vararg aliases: String) {
-        staticPlaceholder(name, loader, 20, false, *aliases)
+    override fun <T> staticPlaceholder(name: String, loader: Function<Map<String, String>, T?>, updateInterval: Int, autoUpdate: Boolean, vararg aliases: String) {
+        registerPlaceholder(StaticPlaceHolder(name, updateInterval, autoUpdate, aliases.toSet(), false, loader))
     }
 
-    override fun <T> staticPlaceholder(name: String, loader: Supplier<T?>, updateInterval: Int, autoUpdate: Boolean, vararg aliases: String) {
-        registerPlaceholder(StaticPlaceHolder(name, updateInterval, autoUpdate, aliases.toSet(), loader))
-    }
-
-    override fun <T> visitorSensitivePlaceholder(name: String, loader: Function<Player, T?>, vararg aliases: String) {
-        visitorSensitivePlaceholder(name, loader, 20, false, *aliases)
-    }
-
-    override fun <T> visitorSensitivePlaceholder(name: String, loader: Function<Player, T?>, updateInterval: Int, autoUpdate: Boolean, vararg aliases: String) {
-        registerPlaceholder(VisitorSensitivePlaceholder(name, updateInterval, autoUpdate, aliases.toSet(), loader))
+    override fun <T> visitorSensitivePlaceholder(name: String, loader: BiFunction<Player, Map<String, String>, T?>, updateInterval: Int, autoUpdate: Boolean, vararg aliases: String) {
+        registerPlaceholder(VisitorSensitivePlaceholder(name, updateInterval, autoUpdate, aliases.toSet(), false, loader))
     }
 
     override fun registerPlaceholder(placeholder: Placeholder<out Any?>) {
@@ -98,11 +90,8 @@ class PlaceholderAPIIml private constructor(private val plugin: PlaceholderPlugi
         }
     }
 
-    override fun getValue(key: String, visitor: Player?, defaultValue: String?): String? =
-            placeholders[key]?.getValue(visitor) ?: key
-
-    override fun translateString(input: String, visitor: Player?) =
-            translateString(input, visitor, input.matchPlaceholders())
+    override fun getValue(key: String, visitor: Player?, defaultValue: String?, params: Map<String, String>): String? =
+            placeholders[key]?.getValue(params, visitor) ?: key
 
     override fun translateString(input: String, visitor: Player?, matched: Collection<MatchedGroup>): String {
         val builder = StringBuilder(input)
@@ -110,7 +99,7 @@ class PlaceholderAPIIml private constructor(private val plugin: PlaceholderPlugi
         var lengthDiff = 0
 
         matched.forEach { group ->
-            val replacement = getValue(group.value, visitor, null)
+            val replacement = getValue(group.value, visitor, null, group.params)
 
             replacement?.run {
                 builder.replace(lengthDiff + group.start, lengthDiff + group.end, replacement)
@@ -138,7 +127,7 @@ class PlaceholderAPIIml private constructor(private val plugin: PlaceholderPlugi
     override fun getPlaceholder(key: String) = placeholders[key]
 
     override fun updatePlaceholder(key: String, visitor: Player?) {
-        getPlaceholder(key)?.forceUpdate(visitor)
+        getPlaceholder(key)?.forceUpdate(player = visitor)
     }
 
     private fun updatePlaceholders() {
