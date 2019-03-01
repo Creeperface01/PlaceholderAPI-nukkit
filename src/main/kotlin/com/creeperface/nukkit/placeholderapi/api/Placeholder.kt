@@ -32,7 +32,9 @@ interface Placeholder<T> {
     val autoUpdate: Boolean
 
     /**
-     * Whether placeholder should take parameters when loading new value, s
+     * Whether placeholder should take parameters when loading new value
+     *
+     * @note set this to false if you don't handle parameters for better performance
      */
     val allowParameters: Boolean
 

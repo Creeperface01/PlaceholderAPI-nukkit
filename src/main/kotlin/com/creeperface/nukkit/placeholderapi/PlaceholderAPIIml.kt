@@ -5,9 +5,10 @@ import cn.nukkit.Nukkit
 import cn.nukkit.Player
 import cn.nukkit.Server
 import cn.nukkit.entity.Entity
-import cn.nukkit.event.Listener
+import cn.nukkit.plugin.Plugin
 import com.creeperface.nukkit.placeholderapi.api.Placeholder
 import com.creeperface.nukkit.placeholderapi.api.util.MatchedGroup
+import com.creeperface.nukkit.placeholderapi.command.PlaceholderCommand
 import com.creeperface.nukkit.placeholderapi.placeholder.StaticPlaceHolder
 import com.creeperface.nukkit.placeholderapi.placeholder.VisitorSensitivePlaceholder
 import com.creeperface.nukkit.placeholderapi.util.bytes2MB
@@ -24,7 +25,7 @@ import com.creeperface.nukkit.placeholderapi.api.PlaceholderAPI as API
 /**
  * @author CreeperFace
  */
-class PlaceholderAPIIml private constructor(private val plugin: PlaceholderPlugin) : Listener, API {
+class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Plugin by plugin {
 
     private val placeholders = mutableMapOf<String, Placeholder<out Any?>>()
     private val updatePlaceholders = mutableMapOf<String, Placeholder<out Any?>>()
@@ -41,7 +42,7 @@ class PlaceholderAPIIml private constructor(private val plugin: PlaceholderPlugi
 
         @JvmStatic
         fun createInstance(plugin: PlaceholderPlugin): PlaceholderAPIIml {
-            Preconditions.checkState(!initialized, "PlaceholderAPI was already initialized")
+            Preconditions.checkState(!initialized, "PlaceholderAPI has been already initialized")
 
             val instance = PlaceholderAPIIml(plugin)
 
@@ -54,15 +55,15 @@ class PlaceholderAPIIml private constructor(private val plugin: PlaceholderPlugi
     init {
         registerDefaultPlaceholders()
 
-        plugin.saveDefaultConfig()
-        configuration = Configuration(plugin)
+        saveDefaultConfig()
+        configuration = Configuration(this)
         configuration.load()
     }
 
     internal fun init() {
-        plugin.server.pluginManager.registerEvents(this, plugin)
+        this.server.scheduler.scheduleRepeatingTask(this, { updatePlaceholders() }, configuration.updateInterval)
 
-        plugin.server.scheduler.scheduleRepeatingTask(plugin, { updatePlaceholders() }, configuration.updateInterval)
+        this.server.commandMap.register("placeholder", PlaceholderCommand())
     }
 
     override fun <T> staticPlaceholder(name: String, loader: Function<Map<String, String>, T?>, updateInterval: Int, autoUpdate: Boolean, vararg aliases: String) {
@@ -81,7 +82,7 @@ class PlaceholderAPIIml private constructor(private val plugin: PlaceholderPlugi
             val v = this.placeholders.putIfAbsent(it, placeholder)
 
             if (v != null && v != placeholder) {
-                plugin.logger.warning("Placeholder '${placeholder.name}' tried to register alias '$it' which is already used by a hologram '${v.name}'")
+                this.logger.warning("Placeholder '${placeholder.name}' tried to register alias '$it' which is already used by a hologram '${v.name}'")
             }
         }
 
@@ -139,46 +140,50 @@ class PlaceholderAPIIml private constructor(private val plugin: PlaceholderPlugi
     override fun getPlaceholders() = HashMap(placeholders)
 
     private fun registerDefaultPlaceholders() {
-        visitorSensitivePlaceholder("player", Function<Player, String?> { p -> p.name }, "playername")
-        visitorSensitivePlaceholder("player_displayname", Function<Player, String?> { p -> p.displayName })
-        visitorSensitivePlaceholder("player_uuid", Function<Player, UUID?> { p -> p.uniqueId })
-        visitorSensitivePlaceholder("player_ping", Function<Player, Int?> { p -> p.ping })
-        visitorSensitivePlaceholder("player_level", Function<Player, String?> { p -> p.level?.name })
-        visitorSensitivePlaceholder("player_can_fly", Function<Player, Boolean?> { p -> p.adventureSettings?.get(AdventureSettings.Type.ALLOW_FLIGHT) })
-        visitorSensitivePlaceholder("player_flying", Function<Player, Boolean?> { p -> p.adventureSettings?.get(AdventureSettings.Type.FLYING) })
-        visitorSensitivePlaceholder("player_health", Function<Player, Float?> { p -> p.health })
-        visitorSensitivePlaceholder("player_max_health", Function<Player, Int?> { p -> p.maxHealth })
-        visitorSensitivePlaceholder("player_saturation", Function<Player, Float?> { p -> p.foodData.foodSaturationLevel })
-        visitorSensitivePlaceholder("player_food", Function<Player, Int?> { p -> p.foodData.level })
-        visitorSensitivePlaceholder("player_gamemode", Function<Player, String?> { p -> Server.getGamemodeString(p.gamemode, true) })
-        visitorSensitivePlaceholder("player_x", Function<Player, Double?> { p -> p.x.round(configuration.coordsAccuracy) }, 0)
-        visitorSensitivePlaceholder("player_y", Function<Player, Double?> { p -> p.y.round(configuration.coordsAccuracy) }, 0)
-        visitorSensitivePlaceholder("player_direction", Function<Player, String?> { p -> p.direction.getName() }, 10)
-        visitorSensitivePlaceholder("player_exp", Function<Player, Int?> { p -> p.experience }, "player_exp_total")
-        visitorSensitivePlaceholder("", Function<Player, Int?> { p -> p.experience })
-        visitorSensitivePlaceholder("player_z", Function<Player, Double?> { p -> p.z.round(configuration.coordsAccuracy) }, 0)
-        visitorSensitivePlaceholder("player_exp_to_next", Function<Player, Int?> { p -> Player.calculateRequireExperience(p.experienceLevel + 1) })
-        visitorSensitivePlaceholder("player_exp_level", Function<Player, Int?> { p -> p.experienceLevel })
-        visitorSensitivePlaceholder("player_speed", Function<Player, Float?> { p -> p.movementSpeed })
-        visitorSensitivePlaceholder("player_max_air", Function<Player, Int?> { p -> p.getDataPropertyInt(Entity.DATA_MAX_AIR) }, 100)
-        visitorSensitivePlaceholder("player_remaining_air", Function<Player, Int?> { p -> p.getDataPropertyInt(Entity.DATA_AIR) }, 10)
-        visitorSensitivePlaceholder("player_item_in_hand", Function<Player, String?> { p -> p.inventory?.itemInHand?.name }, 10)
+        visitorSensitivePlaceholder("test", BiFunction<Player, Map<String, String>, String?> { p, args ->
+            "Hi ${p.name}, ${args["message"] ?: ""}"
+        })
 
-        visitorSensitivePlaceholder("player_x", Function<Player, Double?> { it.x.round(configuration.coordsAccuracy) }, 0)
+        visitorSensitivePlaceholder("player", BiFunction<Player, Map<String, String>, String?> { p, _ -> p.name }, "playername")
+        visitorSensitivePlaceholder("player_displayname", BiFunction<Player, Map<String, String>, String?> { p, _ -> p.displayName })
+        visitorSensitivePlaceholder("player_uuid", BiFunction<Player, Map<String, String>, UUID?> { p, _ -> p.uniqueId })
+        visitorSensitivePlaceholder("player_ping", BiFunction<Player, Map<String, String>, Int?> { p, _ -> p.ping })
+        visitorSensitivePlaceholder("player_level", BiFunction<Player, Map<String, String>, String?> { p, _ -> p.level?.name })
+        visitorSensitivePlaceholder("player_can_fly", BiFunction<Player, Map<String, String>, Boolean?> { p, _ -> p.adventureSettings?.get(AdventureSettings.Type.ALLOW_FLIGHT) })
+        visitorSensitivePlaceholder("player_flying", BiFunction<Player, Map<String, String>, Boolean?> { p, _ -> p.adventureSettings?.get(AdventureSettings.Type.FLYING) })
+        visitorSensitivePlaceholder("player_health", BiFunction<Player, Map<String, String>, Float?> { p, _ -> p.health })
+        visitorSensitivePlaceholder("player_max_health", BiFunction<Player, Map<String, String>, Int?> { p, _ -> p.maxHealth })
+        visitorSensitivePlaceholder("player_saturation", BiFunction<Player, Map<String, String>, Float?> { p, _ -> p.foodData.foodSaturationLevel })
+        visitorSensitivePlaceholder("player_food", BiFunction<Player, Map<String, String>, Int?> { p, _ -> p.foodData.level })
+        visitorSensitivePlaceholder("player_gamemode", BiFunction<Player, Map<String, String>, String?> { p, _ -> Server.getGamemodeString(p.gamemode, true) })
+        visitorSensitivePlaceholder("player_x", BiFunction<Player, Map<String, String>, Double?> { p, _ -> p.x.round(configuration.coordsAccuracy) }, 0)
+        visitorSensitivePlaceholder("player_y", BiFunction<Player, Map<String, String>, Double?> { p, _ -> p.y.round(configuration.coordsAccuracy) }, 0)
+        visitorSensitivePlaceholder("player_direction", BiFunction<Player, Map<String, String>, String?> { p, _ -> p.direction.getName() }, 10)
+        visitorSensitivePlaceholder("player_exp", BiFunction<Player, Map<String, String>, Int?> { p, _ -> p.experience }, "player_exp_total")
+        visitorSensitivePlaceholder("", BiFunction<Player, Map<String, String>, Int?> { p, _ -> p.experience })
+        visitorSensitivePlaceholder("player_z", BiFunction<Player, Map<String, String>, Double?> { p, _ -> p.z.round(configuration.coordsAccuracy) }, 0)
+        visitorSensitivePlaceholder("player_exp_to_next", BiFunction<Player, Map<String, String>, Int?> { p, _ -> Player.calculateRequireExperience(p.experienceLevel + 1) })
+        visitorSensitivePlaceholder("player_exp_level", BiFunction<Player, Map<String, String>, Int?> { p, _ -> p.experienceLevel })
+        visitorSensitivePlaceholder("player_speed", BiFunction<Player, Map<String, String>, Float?> { p, _ -> p.movementSpeed })
+        visitorSensitivePlaceholder("player_max_air", BiFunction<Player, Map<String, String>, Int?> { p, _ -> p.getDataPropertyInt(Entity.DATA_MAX_AIR) }, 100)
+        visitorSensitivePlaceholder("player_remaining_air", BiFunction<Player, Map<String, String>, Int?> { p, _ -> p.getDataPropertyInt(Entity.DATA_AIR) }, 10)
+        visitorSensitivePlaceholder("player_item_in_hand", BiFunction<Player, Map<String, String>, String?> { p, _ -> p.inventory?.itemInHand?.name }, 10)
 
-        val server = plugin.server
+        visitorSensitivePlaceholder("player_x", BiFunction<Player, Map<String, String>, Double?> { p, _ -> p.x.round(configuration.coordsAccuracy) }, 0)
+
+        val server = this.server
         val runtime = Runtime.getRuntime()
 
-        staticPlaceholder("server_online", Supplier<Int?> { server.onlinePlayers.size })
-        staticPlaceholder("server_max_players", Supplier<Int?> { server.maxPlayers })
-        staticPlaceholder("server_motd", Supplier<String?> { server.network.name })
-        staticPlaceholder("server_ram_used", Supplier<Double?> { (runtime.totalMemory() - runtime.freeMemory()).bytes2MB().round(configuration.coordsAccuracy) })
-        staticPlaceholder("server_ram_free", Supplier<Double?> { runtime.freeMemory().bytes2MB().round(configuration.coordsAccuracy) })
-        staticPlaceholder("server_ram_total", Supplier<Double?> { runtime.totalMemory().bytes2MB().round(configuration.coordsAccuracy) })
-        staticPlaceholder("server_ram_max", Supplier<Double?> { runtime.maxMemory().bytes2MB().round(configuration.coordsAccuracy) })
-        staticPlaceholder("server_cores", Supplier<Int?> { runtime.availableProcessors() })
-        staticPlaceholder("server_tps", Supplier<Float?> { server.ticksPerSecondAverage })
-        staticPlaceholder("server_uptime", Supplier<String?> { (System.currentTimeMillis() - Nukkit.START_TIME).formatAsTime(configuration.timeFormat) })
+        staticPlaceholder("server_online", Function<Map<String, String>, Int?> { server.onlinePlayers.size })
+        staticPlaceholder("server_max_players", Function<Map<String, String>, Int?> { server.maxPlayers })
+        staticPlaceholder("server_motd", Function<Map<String, String>, String?> { server.network.name })
+        staticPlaceholder("server_ram_used", Function<Map<String, String>, Double?> { (runtime.totalMemory() - runtime.freeMemory()).bytes2MB().round(configuration.coordsAccuracy) })
+        staticPlaceholder("server_ram_free", Function<Map<String, String>, Double?> { runtime.freeMemory().bytes2MB().round(configuration.coordsAccuracy) })
+        staticPlaceholder("server_ram_total", Function<Map<String, String>, Double?> { runtime.totalMemory().bytes2MB().round(configuration.coordsAccuracy) })
+        staticPlaceholder("server_ram_max", Function<Map<String, String>, Double?> { runtime.maxMemory().bytes2MB().round(configuration.coordsAccuracy) })
+        staticPlaceholder("server_cores", Function<Map<String, String>, Int?> { runtime.availableProcessors() })
+        staticPlaceholder("server_tps", Function<Map<String, String>, Float?> { server.ticksPerSecondAverage })
+        staticPlaceholder("server_uptime", Function<Map<String, String>, String?> { (System.currentTimeMillis() - Nukkit.START_TIME).formatAsTime(configuration.timeFormat) })
 
         staticPlaceholder("time", Supplier<String?> { System.currentTimeMillis().formatAsTime("${configuration.dateFormat} ${configuration.timeFormat}") }, 10)
     }

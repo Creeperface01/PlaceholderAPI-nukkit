@@ -1,20 +1,19 @@
 package com.creeperface.nukkit.placeholderapi.api.util
 
-import com.creeperface.nukkit.placeholderapi.util.trimSides
 import java.util.regex.Pattern
 
 /**
  * @author CreeperFace
  */
 
-private val pattern = Pattern.compile("%(.+(<(?<params>.+)>)?)%")
+private val pattern = Pattern.compile("%((?<ph>\\w+)(<(?<params>.+)>)?)%")
 
 fun String.matchPlaceholders(): List<MatchedGroup> {
     val matcher = pattern.matcher(this)
     val list = mutableListOf<MatchedGroup>()
 
     while (matcher.find()) {
-        val s = matcher.group().trimSides(1, 1)
+        val s = matcher.group("ph")
 
         val params = mutableMapOf<String, String>()
 
@@ -23,6 +22,11 @@ fun String.matchPlaceholders(): List<MatchedGroup> {
                 val paramEntry = param.split('=')
 
                 if (paramEntry.size != 2) {
+//                    MainLogger.getLogger().warning("Invalid parameter or wrong format supplied for placeholder '$s' ($param)")
+                    return@forEach
+                }
+
+                if (paramEntry[0].isEmpty() || paramEntry[1].isEmpty()) {
                     return@forEach
                 }
 
