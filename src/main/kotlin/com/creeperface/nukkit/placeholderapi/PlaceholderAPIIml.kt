@@ -18,7 +18,6 @@ import com.google.common.base.Preconditions
 import java.util.*
 import java.util.function.BiFunction
 import java.util.function.Function
-import java.util.function.Supplier
 import kotlin.collections.HashMap
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderAPI as API
 
@@ -185,6 +184,6 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         staticPlaceholder("server_tps", Function<Map<String, String>, Float?> { server.ticksPerSecondAverage })
         staticPlaceholder("server_uptime", Function<Map<String, String>, String?> { (System.currentTimeMillis() - Nukkit.START_TIME).formatAsTime(configuration.timeFormat) })
 
-        staticPlaceholder("time", Supplier<String?> { System.currentTimeMillis().formatAsTime("${configuration.dateFormat} ${configuration.timeFormat}") }, 10)
+        staticPlaceholder("time", Function<Map<String, String>, String?> { System.currentTimeMillis().formatAsTime("${configuration.dateFormat} ${configuration.timeFormat}") }, 10)
     }
 }
