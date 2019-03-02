@@ -6,12 +6,13 @@ import cn.nukkit.plugin.Plugin
 import com.creeperface.nukkit.placeholderapi.api.Placeholder
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderChangeListener
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderUpdateEvent
+import com.creeperface.nukkit.placeholderapi.util.toFormattedString
 import java.util.*
 
 /**
  * @author CreeperFace
  */
-abstract class BasePlaceholder<T>(override val name: String, override val updateInterval: Int, override val autoUpdate: Boolean, override val aliases: Set<String>, override val allowParameters: Boolean) : Placeholder<T> {
+abstract class BasePlaceholder<T : Any?>(override val name: String, override val updateInterval: Int, override val autoUpdate: Boolean, override val aliases: Set<String>, override val allowParameters: Boolean) : Placeholder<T> {
 
     protected val changeListeners = mutableMapOf<Plugin, PlaceholderChangeListener<T>>()
 
@@ -27,8 +28,8 @@ abstract class BasePlaceholder<T>(override val name: String, override val update
         return safeValue()
     }
 
-    override fun getDirectValue(player: Player?): T? {
-        getValue(player)
+    override fun getDirectValue(parameters: Map<String, String>, player: Player?): T? {
+        getValue(parameters, player)
 
         return value
     }
@@ -47,7 +48,7 @@ abstract class BasePlaceholder<T>(override val name: String, override val update
 
     protected abstract fun loadValue(parameters: Map<String, String>, player: Player? = null): T?
 
-    protected fun safeValue() = value?.toString() ?: name
+    protected fun safeValue() = value?.toFormattedString() ?: name
 
     @JvmOverloads
     protected fun checkForUpdate(parameters: Map<String, String> = emptyMap(), player: Player? = null, force: Boolean = false): Boolean {

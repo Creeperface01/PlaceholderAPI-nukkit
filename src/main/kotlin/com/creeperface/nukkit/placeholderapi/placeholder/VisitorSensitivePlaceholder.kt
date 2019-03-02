@@ -9,7 +9,7 @@ import java.util.function.BiFunction
 /**
  * @author CreeperFace
  */
-open class VisitorSensitivePlaceholder<T>(name: String, updateInterval: Int, autoUpdate: Boolean, aliases: Set<String>, allowParameters: Boolean, private val loader: BiFunction<Player, Map<String, String>, T?>) : BasePlaceholder<T>(name, updateInterval, autoUpdate, aliases, allowParameters) {
+open class VisitorSensitivePlaceholder<T : Any?>(name: String, updateInterval: Int, autoUpdate: Boolean, aliases: Set<String>, allowParameters: Boolean, private val loader: BiFunction<Player, Map<String, String>, T?>) : BasePlaceholder<T>(name, updateInterval, autoUpdate, aliases, allowParameters) {
 
     private val cache = WeakHashMap<Player, Entry<T>>()
 

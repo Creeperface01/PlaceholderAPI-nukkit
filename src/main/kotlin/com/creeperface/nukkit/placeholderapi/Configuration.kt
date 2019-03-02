@@ -9,21 +9,22 @@ import cn.nukkit.utils.SimpleConfig
 class Configuration(plugin: Plugin) : SimpleConfig(plugin) {
 
     var version = 0.toDouble()
-        private set
 
     @Path("min_update_interval")
     var updateInterval = 10
-        private set
 
     @Path("date_format")
     var dateFormat = "yyyy-MM-dd"
-        private set
 
     @Path("time_format")
     var timeFormat = "HH:mm:ss"
-        private set
 
     @Path("coordinates_accuracy")
     var coordsAccuracy = 2
-        private set
+
+    @Path("boolean_format.false")
+    var booleanFalseFormat = "no"
+
+    @Path("boolean_format.true")
+    var booleanTrueFormat = "yes"
 }

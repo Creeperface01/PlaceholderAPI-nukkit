@@ -38,20 +38,19 @@ interface Placeholder<T> {
      */
     val allowParameters: Boolean
 
-    fun getValue() = getValue(null)
-
-    fun getValue(parameters: Map<String, String> = emptyMap()) = getValue(parameters, null)
-
+    @JvmDefault
     fun getValue(player: Player? = null) = getValue(emptyMap(), player)
 
+    @JvmDefault
     fun getValue(parameters: Map<String, String> = emptyMap(), player: Player? = null): String
 
-    fun getDirectValue() = getDirectValue(null)
+    @JvmDefault
+    fun getDirectValue(player: Player? = null) = getDirectValue(emptyMap(), player)
 
-    fun getDirectValue(player: Player? = null): T?
+    @JvmDefault
+    fun getDirectValue(parameters: Map<String, String> = emptyMap(), player: Player? = null): T?
 
-    fun forceUpdate() = forceUpdate(player = null)
-
+    @JvmDefault
     fun forceUpdate(parameters: Map<String, String> = emptyMap(), player: Player? = null): String
 
     fun addListener(plugin: Plugin, listener: PlaceholderChangeListener<T>)

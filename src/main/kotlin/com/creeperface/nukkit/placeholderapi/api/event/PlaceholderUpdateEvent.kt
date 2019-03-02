@@ -8,7 +8,7 @@ import com.creeperface.nukkit.placeholderapi.placeholder.BasePlaceholder
 /**
  * @author CreeperFace
  */
-class PlaceholderUpdateEvent(val placeholder: BasePlaceholder<out Any?>, val oldValue: Any?, val newValue: Any?, val player: Player?) : Event() {
+class PlaceholderUpdateEvent<T : Any?>(val placeholder: BasePlaceholder<T>, val oldValue: Any?, val newValue: Any?, val player: Player?) : Event() {
 
     companion object {
         @JvmStatic

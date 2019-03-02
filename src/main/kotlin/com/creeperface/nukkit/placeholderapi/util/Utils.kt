@@ -1,5 +1,6 @@
 package com.creeperface.nukkit.placeholderapi.util
 
+import com.creeperface.nukkit.placeholderapi.PlaceholderAPIIml
 import com.google.common.base.Preconditions
 import java.text.SimpleDateFormat
 import java.util.*
@@ -31,3 +32,19 @@ fun Long.formatAsTime(format: String): String {
 }
 
 fun Long.bytes2MB() = this / 1024.0 / 1024.0
+
+fun Boolean.toFormatString(): String {
+    val conf = PlaceholderAPIIml.instance.configuration
+
+    return if (this) conf.booleanTrueFormat else conf.booleanFalseFormat
+}
+
+fun Date.toFormatString(): String {
+    return SimpleDateFormat(PlaceholderAPIIml.instance.configuration.dateFormat).format(this)
+}
+
+fun Any.toFormattedString(): String = when (this) {
+    is Boolean -> toFormatString()
+    is Date -> toFormatString()
+    else -> toString()
+}

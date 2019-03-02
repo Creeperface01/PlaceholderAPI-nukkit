@@ -11,7 +11,7 @@ import java.util.function.Function
 /**
  * @author CreeperFace
  */
-class PlaceholderBuilder<T>(private val name: String) {
+class PlaceholderBuilder<T : Any>(private val name: String) {
 
     private var async = false //TODO: currently not implemented
 

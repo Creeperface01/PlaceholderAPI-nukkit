@@ -16,7 +16,7 @@ interface PlaceholderAPI {
     companion object {
 
         @JvmStatic
-        fun getInstance(): com.creeperface.nukkit.placeholderapi.api.PlaceholderAPI {
+        fun getInstance(): PlaceholderAPI {
             return PlaceholderAPIIml.instance
         }
     }
@@ -28,10 +28,10 @@ interface PlaceholderAPI {
             )
     )
     @JvmDefault
-    fun <T> staticPlaceholder(name: String, loader: Supplier<T?>, vararg aliases: String) = staticPlaceholder(name, Function<Map<kotlin.String, kotlin.String>, T?> { loader.get() }, *aliases)
+    fun <T> staticPlaceholder(name: String, loader: Supplier<T?>, vararg aliases: String) where T : Any? = staticPlaceholder(name, Function<Map<kotlin.String, kotlin.String>, T?> { loader.get() }, *aliases)
 
     @JvmDefault
-    fun <T> staticPlaceholder(name: String, loader: Function<Map<String, String>, T?>, vararg aliases: String) = staticPlaceholder(name, loader, 20, false, *aliases)
+    fun <T> staticPlaceholder(name: String, loader: Function<Map<String, String>, T?>, vararg aliases: String) where T : Any? = staticPlaceholder(name, loader, 20, false, *aliases)
 
     @Deprecated(
             message = "Replaced with a method containing loader with placeholder parameters",
@@ -40,10 +40,10 @@ interface PlaceholderAPI {
             )
     )
     @JvmDefault
-    fun <T> staticPlaceholder(name: String, loader: Supplier<T?>, updateInterval: Int) = staticPlaceholder(name, Function<Map<kotlin.String, kotlin.String>, T?> { loader.get() }, updateInterval)
+    fun <T> staticPlaceholder(name: String, loader: Supplier<T?>, updateInterval: Int) where T : Any? = staticPlaceholder(name, Function<Map<kotlin.String, kotlin.String>, T?> { loader.get() }, updateInterval)
 
     @JvmDefault
-    fun <T> staticPlaceholder(name: String, loader: Function<Map<String, String>, T?>, updateInterval: Int) = staticPlaceholder(name, loader, updateInterval, false)
+    fun <T> staticPlaceholder(name: String, loader: Function<Map<String, String>, T?>, updateInterval: Int) where T : Any? = staticPlaceholder(name, loader, updateInterval, false)
 
 
     @Deprecated(
@@ -53,9 +53,9 @@ interface PlaceholderAPI {
             )
     )
     @JvmDefault
-    fun <T> staticPlaceholder(name: String, loader: Supplier<T?>, updateInterval: Int = -1, autoUpdate: Boolean = false, vararg aliases: String) = staticPlaceholder(name, Function<Map<kotlin.String, kotlin.String>, T?> { loader.get() }, updateInterval, autoUpdate, *aliases)
+    fun <T> staticPlaceholder(name: String, loader: Supplier<T?>, updateInterval: Int = -1, autoUpdate: Boolean = false, vararg aliases: String) where T : Any? = staticPlaceholder(name, Function<Map<kotlin.String, kotlin.String>, T?> { loader.get() }, updateInterval, autoUpdate, *aliases)
 
-    fun <T> staticPlaceholder(name: String, loader: Function<Map<String, String>, T?>, updateInterval: Int = -1, autoUpdate: Boolean = false, vararg aliases: String)
+    fun <T> staticPlaceholder(name: String, loader: Function<Map<String, String>, T?>, updateInterval: Int = -1, autoUpdate: Boolean = false, vararg aliases: String) where T : Any?
 
     @Deprecated(
             message = "Replaced with a method containing loader with placeholder parameters",
@@ -64,10 +64,10 @@ interface PlaceholderAPI {
             )
     )
     @JvmDefault
-    fun <T> visitorSensitivePlaceholder(name: String, loader: Function<Player, T?>, vararg aliases: String) = visitorSensitivePlaceholder(name, BiFunction<Player, Map<String, String>, T?> { p, _ -> loader.apply(p) }, *aliases)
+    fun <T> visitorSensitivePlaceholder(name: String, loader: Function<Player, T?>, vararg aliases: String) where T : Any? = visitorSensitivePlaceholder(name, BiFunction<Player, Map<String, String>, T?> { p, _ -> loader.apply(p) }, *aliases)
 
     @JvmDefault
-    fun <T> visitorSensitivePlaceholder(name: String, loader: BiFunction<Player, Map<String, String>, T?>, vararg aliases: String) = visitorSensitivePlaceholder(name, loader, 20, false, *aliases)
+    fun <T> visitorSensitivePlaceholder(name: String, loader: BiFunction<Player, Map<String, String>, T?>, vararg aliases: String) where T : Any? = visitorSensitivePlaceholder(name, loader, 20, false, *aliases)
 
     @Deprecated(
             message = "Replaced with a method containing loader with placeholder parameters",
@@ -76,9 +76,9 @@ interface PlaceholderAPI {
             )
     )
     @JvmDefault
-    fun <T> visitorSensitivePlaceholder(name: String, loader: Function<Player, T?>, updateInterval: Int) = visitorSensitivePlaceholder(name, BiFunction<Player, Map<String, String>, T?> { p, _ -> loader.apply(p) }, updateInterval, false)
+    fun <T> visitorSensitivePlaceholder(name: String, loader: Function<Player, T?>, updateInterval: Int) where T : Any? = visitorSensitivePlaceholder(name, BiFunction<Player, Map<String, String>, T?> { p, _ -> loader.apply(p) }, updateInterval, false)
 
-    fun <T> visitorSensitivePlaceholder(name: String, loader: BiFunction<Player, Map<String, String>, T?>, updateInterval: Int) = visitorSensitivePlaceholder(name, loader, updateInterval, false)
+    fun <T> visitorSensitivePlaceholder(name: String, loader: BiFunction<Player, Map<String, String>, T?>, updateInterval: Int) where T : Any? = visitorSensitivePlaceholder(name, loader, updateInterval, false)
 
     @Deprecated(
             message = "Replaced with a method containing loader with placeholder parameters",
@@ -87,9 +87,9 @@ interface PlaceholderAPI {
             )
     )
     @JvmDefault
-    fun <T> visitorSensitivePlaceholder(name: String, loader: Function<Player, T?>, updateInterval: Int = -1, autoUpdate: Boolean = false, vararg aliases: String) = visitorSensitivePlaceholder(name, BiFunction<Player, Map<String, String>, T?> { p, _ -> loader.apply(p) }, updateInterval, autoUpdate, *aliases)
+    fun <T> visitorSensitivePlaceholder(name: String, loader: Function<Player, T?>, updateInterval: Int = -1, autoUpdate: Boolean = false, vararg aliases: String) where T : Any? = visitorSensitivePlaceholder(name, BiFunction<Player, Map<String, String>, T?> { p, _ -> loader.apply(p) }, updateInterval, autoUpdate, *aliases)
 
-    fun <T> visitorSensitivePlaceholder(name: String, loader: BiFunction<Player, Map<String, String>, T?>, updateInterval: Int = -1, autoUpdate: Boolean = false, vararg aliases: String)
+    fun <T> visitorSensitivePlaceholder(name: String, loader: BiFunction<Player, Map<String, String>, T?>, updateInterval: Int = -1, autoUpdate: Boolean = false, vararg aliases: String) where T : Any?
 
     fun registerPlaceholder(placeholder: Placeholder<out Any?>)
 
