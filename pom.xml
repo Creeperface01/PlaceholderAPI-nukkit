@@ -13,11 +13,23 @@
         <lombok.version>1.18.0</lombok.version>
     </properties>
 
+    <distributionManagement>
+        <repository>
+            <id>releases</id>
+            <name>nukkitx-releases</name>
+            <url>https://repo.nukkitx.com/release</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>nukkitx-snapshots</name>
+            <url>https://repo.nukkitx.com/snapshot</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <repositories>
         <repository>
-            <id>central</id>
-            <name>potestas-releases</name>
-            <url>https://repo.potestas.xyz/main</url>
+            <id>nukkitx-repo</id>
+            <url>http://repo.nukkitx.com/main/</url>
         </repository>
     </repositories>
 
@@ -31,7 +43,7 @@
                 <executions>
                     <execution>
                         <id>compile</id>
-                        <phase>compile</phase>
+                        <phase>process-sources</phase>
                         <goals>
                             <goal>compile</goal>
                         </goals>
