@@ -39,19 +39,19 @@ interface Placeholder<T> {
     val allowParameters: Boolean
 
     @JvmDefault
-    fun getValue(player: Player? = null) = getValue(emptyMap(), player)
+    fun getValue(player: Player? = null) = getValue(PlaceholderParameters.EMPTY, player)
 
     @JvmDefault
-    fun getValue(parameters: Map<String, String> = emptyMap(), player: Player? = null): String
+    fun getValue(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, player: Player? = null): String
 
     @JvmDefault
-    fun getDirectValue(player: Player? = null) = getDirectValue(emptyMap(), player)
+    fun getDirectValue(player: Player? = null) = getDirectValue(PlaceholderParameters.EMPTY, player)
 
     @JvmDefault
-    fun getDirectValue(parameters: Map<String, String> = emptyMap(), player: Player? = null): T?
+    fun getDirectValue(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, player: Player? = null): T?
 
     @JvmDefault
-    fun forceUpdate(parameters: Map<String, String> = emptyMap(), player: Player? = null): String
+    fun forceUpdate(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, player: Player? = null): String
 
     fun addListener(plugin: Plugin, listener: PlaceholderChangeListener<T>)
 
@@ -61,7 +61,7 @@ interface Placeholder<T> {
 
     fun isVisitorSensitive() = false
 
-    fun updateOrExecute(parameters: Map<String, String> = emptyMap(), player: Player? = null, action: Runnable)
+    fun updateOrExecute(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, player: Player? = null, action: Runnable)
 
     fun getType(): Type {
         val mySuperclass = this::class.java.genericSuperclass

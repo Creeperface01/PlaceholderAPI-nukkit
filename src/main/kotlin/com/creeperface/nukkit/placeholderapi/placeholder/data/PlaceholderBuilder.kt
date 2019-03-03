@@ -2,6 +2,7 @@ package com.creeperface.nukkit.placeholderapi.placeholder.data
 
 import cn.nukkit.Player
 import com.creeperface.nukkit.placeholderapi.PlaceholderAPIIml
+import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
 import com.creeperface.nukkit.placeholderapi.placeholder.StaticPlaceHolder
 import com.creeperface.nukkit.placeholderapi.placeholder.VisitorSensitivePlaceholder
 import com.google.common.base.Preconditions
@@ -23,9 +24,9 @@ class PlaceholderBuilder<T : Any>(private val name: String) {
 
     private var allowParameters = false
 
-    private var staticLoader: (Function<Map<String, String>, T?>)? = null
+    private var staticLoader: (Function<PlaceholderParameters, T?>)? = null
 
-    private var visitorLoader: (BiFunction<Player, Map<String, String>, T?>)? = null
+    private var visitorLoader: (BiFunction<Player, PlaceholderParameters, T?>)? = null
 
     private val aliases = mutableSetOf<String>()
 
@@ -48,9 +49,9 @@ class PlaceholderBuilder<T : Any>(private val name: String) {
 
     fun aliases(vararg value: String) = apply { aliases.addAll(value) }
 
-    fun loader(value: Function<Map<String, String>, T?>) = apply { staticLoader = value }
+    fun loader(value: Function<PlaceholderParameters, T?>) = apply { staticLoader = value }
 
-    fun loader(value: BiFunction<Player, Map<String, String>, T?>) = apply { visitorLoader = value }
+    fun loader(value: BiFunction<Player, PlaceholderParameters, T?>) = apply { visitorLoader = value }
 
     fun build(api: PlaceholderAPIIml) {
         Preconditions.checkArgument(staticLoader == null && visitorLoader == null, "Loader not specified")

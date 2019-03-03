@@ -7,13 +7,12 @@ import cn.nukkit.Server
 import cn.nukkit.entity.Entity
 import cn.nukkit.plugin.Plugin
 import com.creeperface.nukkit.placeholderapi.api.Placeholder
+import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
 import com.creeperface.nukkit.placeholderapi.api.util.MatchedGroup
 import com.creeperface.nukkit.placeholderapi.command.PlaceholderCommand
 import com.creeperface.nukkit.placeholderapi.placeholder.StaticPlaceHolder
 import com.creeperface.nukkit.placeholderapi.placeholder.VisitorSensitivePlaceholder
-import com.creeperface.nukkit.placeholderapi.util.bytes2MB
-import com.creeperface.nukkit.placeholderapi.util.formatAsTime
-import com.creeperface.nukkit.placeholderapi.util.round
+import com.creeperface.nukkit.placeholderapi.util.*
 import com.google.common.base.Preconditions
 import java.util.*
 import java.util.function.BiFunction
@@ -65,11 +64,11 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         this.server.commandMap.register("placeholder", PlaceholderCommand())
     }
 
-    override fun <T> staticPlaceholder(name: String, loader: Function<Map<String, String>, T?>, updateInterval: Int, autoUpdate: Boolean, vararg aliases: String) where T : Any? {
+    override fun <T> staticPlaceholder(name: String, loader: Function<PlaceholderParameters, T?>, updateInterval: Int, autoUpdate: Boolean, vararg aliases: String) where T : Any? {
         registerPlaceholder(StaticPlaceHolder(name, updateInterval, autoUpdate, aliases.toSet(), false, loader))
     }
 
-    override fun <T> visitorSensitivePlaceholder(name: String, loader: BiFunction<Player, Map<String, String>, T?>, updateInterval: Int, autoUpdate: Boolean, vararg aliases: String) where T : Any? {
+    override fun <T> visitorSensitivePlaceholder(name: String, loader: BiFunction<Player, PlaceholderParameters, T?>, updateInterval: Int, autoUpdate: Boolean, vararg aliases: String) where T : Any? {
         registerPlaceholder(VisitorSensitivePlaceholder(name, updateInterval, autoUpdate, aliases.toSet(), false, loader))
     }
 
@@ -90,7 +89,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         }
     }
 
-    override fun getValue(key: String, visitor: Player?, defaultValue: String?, params: Map<String, String>): String? =
+    override fun getValue(key: String, visitor: Player?, defaultValue: String?, params: PlaceholderParameters): String? =
             placeholders[key]?.getValue(params, visitor) ?: key
 
     override fun translateString(input: String, visitor: Player?, matched: Collection<MatchedGroup>): String {
@@ -138,6 +137,12 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
 
     override fun getPlaceholders() = HashMap(placeholders)
 
+    override fun formatDate(millis: Long) = millis.formatAsTime("${configuration.dateFormat} ${configuration.timeFormat}")
+
+    override fun formatTime(millis: Long) = millis.formatAsTime(configuration.timeFormat)
+
+    override fun formatBoolean(value: Boolean) = value.toFormatString()
+
     private fun registerDefaultPlaceholders() {
         visitorSensitivePlaceholder<String>("player", BiFunction { p, _ -> p.name }, "playername")
         visitorSensitivePlaceholder<String>("player_displayname", BiFunction { p, _ -> p.displayName })
@@ -178,6 +183,43 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         staticPlaceholder<Float>("server_tps", Function { server.ticksPerSecondAverage })
         staticPlaceholder<String>("server_uptime", Function { (System.currentTimeMillis() - Nukkit.START_TIME).formatAsTime(configuration.timeFormat) })
 
-        staticPlaceholder<String>("time", Function { System.currentTimeMillis().formatAsTime("${configuration.dateFormat} ${configuration.timeFormat}") }, 10)
+        staticPlaceholder<String>("time", Function { formatTime(System.currentTimeMillis()) }, 10)
+    }
+
+    private fun optimisePlaceholders() { //TODO: finish later
+        val minGroupLength = 3
+
+        val groups = mutableMapOf<String, PlaceholderGroup>()
+
+        fun createGroups(placeholders: Map<String, Placeholder<Any>>): Map<String, PlaceholderGroup> {
+            val grps = mutableMapOf<String, PlaceholderGroup>()
+
+            for ((name, placeholder) in placeholders) {
+                val similar = mutableMapOf<String, Placeholder<Any>>()
+                val prefix = name.substring(0, minGroupLength)
+
+                for ((name_, placeholder_) in placeholders) {
+                    if (name_.startsWith(prefix)) {
+                        similar[name_.substring(minGroupLength)] = placeholder_
+                    }
+                }
+
+                if (similar.size > minGroupLength) {
+                    grps[prefix] = PlaceholderGroup(prefix, similar)
+                }
+            }
+
+            return grps
+        }
+
+        val depth = 0
+
+        while (true) {
+            var groupMap = groups
+
+            for (i in 0..depth) {
+
+            }
+        }
     }
 }

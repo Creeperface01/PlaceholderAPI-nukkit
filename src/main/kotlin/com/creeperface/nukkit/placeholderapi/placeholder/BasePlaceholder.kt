@@ -4,6 +4,7 @@ import cn.nukkit.Player
 import cn.nukkit.Server
 import cn.nukkit.plugin.Plugin
 import com.creeperface.nukkit.placeholderapi.api.Placeholder
+import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderChangeListener
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderUpdateEvent
 import com.creeperface.nukkit.placeholderapi.util.toFormattedString
@@ -20,7 +21,7 @@ abstract class BasePlaceholder<T : Any?>(override val name: String, override val
     var lastUpdate: Long = 0
     val server: Server = Server.getInstance()
 
-    override fun getValue(parameters: Map<String, String>, player: Player?): String {
+    override fun getValue(parameters: PlaceholderParameters, player: Player?): String {
         if (value == null || readyToUpdate()) {
             checkForUpdate(player = player)
         }
@@ -28,13 +29,13 @@ abstract class BasePlaceholder<T : Any?>(override val name: String, override val
         return safeValue()
     }
 
-    override fun getDirectValue(parameters: Map<String, String>, player: Player?): T? {
+    override fun getDirectValue(parameters: PlaceholderParameters, player: Player?): T? {
         getValue(parameters, player)
 
         return value
     }
 
-    override fun updateOrExecute(parameters: Map<String, String>, player: Player?, action: Runnable) {
+    override fun updateOrExecute(parameters: PlaceholderParameters, player: Player?, action: Runnable) {
         var updated = false
 
         if (value == null || readyToUpdate()) {
@@ -46,12 +47,12 @@ abstract class BasePlaceholder<T : Any?>(override val name: String, override val
         }
     }
 
-    protected abstract fun loadValue(parameters: Map<String, String>, player: Player? = null): T?
+    protected abstract fun loadValue(parameters: PlaceholderParameters, player: Player? = null): T?
 
     protected fun safeValue() = value?.toFormattedString() ?: name
 
     @JvmOverloads
-    protected fun checkForUpdate(parameters: Map<String, String> = emptyMap(), player: Player? = null, force: Boolean = false): Boolean {
+    protected fun checkForUpdate(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, player: Player? = null, force: Boolean = false): Boolean {
         if (!force && !readyToUpdate())
             return false
 
