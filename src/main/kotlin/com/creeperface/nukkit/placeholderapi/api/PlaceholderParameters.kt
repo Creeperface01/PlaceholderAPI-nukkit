@@ -5,7 +5,7 @@ package com.creeperface.nukkit.placeholderapi.api
  */
 class PlaceholderParameters(private val params: Map<String, String>, private val unnamed: List<String>) {
 
-    fun single() = unnamed.singleOrNull() ?: params.values.singleOrNull()
+    fun single() = unnamed.firstOrNull() ?: params.values.firstOrNull()
 
     operator fun get(key: String) = params[key]
 
