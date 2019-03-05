@@ -39,6 +39,9 @@ interface Placeholder<T> {
     val allowParameters: Boolean
 
     @JvmDefault
+    fun getValue() = getValue(PlaceholderParameters.EMPTY, null)
+
+    @JvmDefault
     fun getValue(player: Player? = null) = getValue(PlaceholderParameters.EMPTY, player)
 
     @JvmDefault
