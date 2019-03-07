@@ -36,7 +36,7 @@ interface Placeholder<T> {
      *
      * @note set this to false if you don't handle parameters for better performance
      */
-    val allowParameters: Boolean
+    val processParameters: Boolean
 
     @JvmDefault
     fun getValue() = getValue(PlaceholderParameters.EMPTY, null)

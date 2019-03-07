@@ -64,17 +64,48 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         this.server.commandMap.register("placeholder", PlaceholderCommand())
     }
 
-    override fun <T> staticPlaceholder(name: String, loader: Function<PlaceholderParameters, T?>, updateInterval: Int, autoUpdate: Boolean, vararg aliases: String) where T : Any? {
-        registerPlaceholder(StaticPlaceHolder(name, updateInterval, autoUpdate, aliases.toSet(), false, loader))
+    override fun <T> staticPlaceholder(
+            name: String,
+            loader: Function<PlaceholderParameters, T?>,
+            updateInterval: Int,
+            autoUpdate: Boolean,
+            processParameters: Boolean,
+            vararg aliases: String) where T : Any? {
+        registerPlaceholder(
+                StaticPlaceHolder(
+                        name,
+                        updateInterval,
+                        autoUpdate,
+                        aliases.toSet(),
+                        processParameters,
+                        loader)
+        )
     }
 
-    override fun <T> visitorSensitivePlaceholder(name: String, loader: BiFunction<Player, PlaceholderParameters, T?>, updateInterval: Int, autoUpdate: Boolean, vararg aliases: String) where T : Any? {
-        registerPlaceholder(VisitorSensitivePlaceholder(name, updateInterval, autoUpdate, aliases.toSet(), false, loader))
+    override fun <T> visitorSensitivePlaceholder(
+            name: String,
+            loader: BiFunction<Player, PlaceholderParameters, T?>,
+            updateInterval: Int,
+            autoUpdate: Boolean,
+            processParameters: Boolean,
+            vararg aliases: String) where T : Any? {
+        registerPlaceholder(
+                VisitorSensitivePlaceholder(
+                        name,
+                        updateInterval,
+                        autoUpdate,
+                        aliases.toSet(),
+                        processParameters,
+                        loader)
+        )
     }
 
     override fun registerPlaceholder(placeholder: Placeholder<out Any?>) {
         val existing = this.placeholders.putIfAbsent(placeholder.name, placeholder)
-        Preconditions.checkState(existing != placeholder, "Trying to register placeholder '${placeholder.name}' which already exists")
+        Preconditions.checkState(
+                existing != placeholder,
+                "Trying to register placeholder '${placeholder.name}' which already exists"
+        )
 
         placeholder.aliases.forEach {
             val v = this.placeholders.putIfAbsent(it, placeholder)

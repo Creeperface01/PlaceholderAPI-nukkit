@@ -22,7 +22,7 @@ class PlaceholderBuilder<T : Any>(private val name: String) {
 
 //    private val parameters = mutableSetOf<PlaceholderParameter>()
 
-    private var allowParameters = false
+    private var processParameters = false
 
     private var staticLoader: (Function<PlaceholderParameters, T?>)? = null
 
@@ -36,8 +36,8 @@ class PlaceholderBuilder<T : Any>(private val name: String) {
 
     fun autoUpdate(value: Boolean) = apply { autoUpdate = value }
 
-    fun allowParameters(value: Boolean): PlaceholderBuilder<T> {
-        this.allowParameters = value
+    fun processParameters(value: Boolean): PlaceholderBuilder<T> {
+        this.processParameters = value
         return this
     }
 
@@ -56,7 +56,7 @@ class PlaceholderBuilder<T : Any>(private val name: String) {
     fun build(api: PlaceholderAPIIml) {
         Preconditions.checkArgument(staticLoader == null && visitorLoader == null, "Loader not specified")
 
-        val placeholder = if (staticLoader == null) VisitorSensitivePlaceholder(name, updateInterval, autoUpdate, aliases, allowParameters, visitorLoader!!) else StaticPlaceHolder(name, updateInterval, autoUpdate, aliases, allowParameters, staticLoader!!)
+        val placeholder = if (staticLoader == null) VisitorSensitivePlaceholder(name, updateInterval, autoUpdate, aliases, processParameters, visitorLoader!!) else StaticPlaceHolder(name, updateInterval, autoUpdate, aliases, processParameters, staticLoader!!)
 
         api.registerPlaceholder(placeholder)
     }

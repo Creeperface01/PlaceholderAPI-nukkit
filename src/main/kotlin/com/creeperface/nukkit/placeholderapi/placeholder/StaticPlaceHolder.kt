@@ -7,7 +7,7 @@ import java.util.function.Function
 /**
  * @author CreeperFace
  */
-open class StaticPlaceHolder<T : Any?>(name: String, updateInterval: Int, autoUpdate: Boolean, aliases: Set<String>, allowParameters: Boolean, private val loader: Function<PlaceholderParameters, T?>) : BasePlaceholder<T>(name, updateInterval, autoUpdate, aliases, allowParameters) {
+open class StaticPlaceHolder<T : Any?>(name: String, updateInterval: Int, autoUpdate: Boolean, aliases: Set<String>, processParameters: Boolean, private val loader: Function<PlaceholderParameters, T?>) : BasePlaceholder<T>(name, updateInterval, autoUpdate, aliases, processParameters) {
 
     override fun loadValue(parameters: PlaceholderParameters, player: Player?): T? {
         return loader.apply(parameters)
