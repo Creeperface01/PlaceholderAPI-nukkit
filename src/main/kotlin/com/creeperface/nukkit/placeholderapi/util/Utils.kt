@@ -4,6 +4,8 @@ import com.creeperface.nukkit.placeholderapi.PlaceholderAPIIml
 import com.google.common.base.Preconditions
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.pow
+import kotlin.math.roundToInt
 
 /**
  * @author CreeperFace
@@ -14,10 +16,10 @@ fun String.trimSides(startOffset: Int, endOffset: Int) = this.substring(startOff
 fun <T : Number> T.round(accuracy: Int = 2): T {
     Preconditions.checkArgument(accuracy >= 0)
 
-    val i = Math.pow(10.toDouble(), accuracy.toDouble())
+    val i = 10.toDouble().pow(accuracy.toDouble())
 
     @Suppress("UNCHECKED_CAST")
-    return (Math.round(this.toDouble() * i) / i) as T
+    return ((this.toDouble() * i).roundToInt() / i) as T
 }
 
 fun Long.formatAsTime(format: String): String {

@@ -8,16 +8,21 @@ import cn.nukkit.entity.Entity
 import cn.nukkit.plugin.Plugin
 import com.creeperface.nukkit.placeholderapi.api.Placeholder
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
+import com.creeperface.nukkit.placeholderapi.api.scope.GlobalScope
+import com.creeperface.nukkit.placeholderapi.api.scope.Scope
 import com.creeperface.nukkit.placeholderapi.api.util.MatchedGroup
+import com.creeperface.nukkit.placeholderapi.api.util.PlaceholderGroup
 import com.creeperface.nukkit.placeholderapi.command.PlaceholderCommand
 import com.creeperface.nukkit.placeholderapi.placeholder.StaticPlaceHolder
 import com.creeperface.nukkit.placeholderapi.placeholder.VisitorSensitivePlaceholder
-import com.creeperface.nukkit.placeholderapi.util.*
+import com.creeperface.nukkit.placeholderapi.util.bytes2MB
+import com.creeperface.nukkit.placeholderapi.util.formatAsTime
+import com.creeperface.nukkit.placeholderapi.util.round
+import com.creeperface.nukkit.placeholderapi.util.toFormatString
 import com.google.common.base.Preconditions
 import java.util.*
 import java.util.function.BiFunction
 import java.util.function.Function
-import kotlin.collections.HashMap
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderAPI as API
 
 /**
@@ -25,7 +30,11 @@ import com.creeperface.nukkit.placeholderapi.api.PlaceholderAPI as API
  */
 class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Plugin by plugin {
 
-    private val placeholders = mutableMapOf<String, Placeholder<out Any?>>()
+    override val globalScope = GlobalScope
+
+    private val globalPlaceholders = mutableMapOf<String, Placeholder<out Any?>>()
+    private val scopePlaceholders = mutableMapOf<Scope, PlaceholderGroup>()
+
     private val updatePlaceholders = mutableMapOf<String, Placeholder<out Any?>>()
 
     val configuration: Configuration
@@ -70,6 +79,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
             updateInterval: Int,
             autoUpdate: Boolean,
             processParameters: Boolean,
+            scope: Scope,
             vararg aliases: String) where T : Any? {
         registerPlaceholder(
                 StaticPlaceHolder(
@@ -78,7 +88,9 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
                         autoUpdate,
                         aliases.toSet(),
                         processParameters,
-                        loader)
+                        scope,
+                        loader
+                )
         )
     }
 
@@ -88,6 +100,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
             updateInterval: Int,
             autoUpdate: Boolean,
             processParameters: Boolean,
+            scope: Scope,
             vararg aliases: String) where T : Any? {
         registerPlaceholder(
                 VisitorSensitivePlaceholder(
@@ -96,22 +109,27 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
                         autoUpdate,
                         aliases.toSet(),
                         processParameters,
-                        loader)
+                        scope,
+                        loader
+                )
         )
     }
 
     override fun registerPlaceholder(placeholder: Placeholder<out Any?>) {
-        val existing = this.placeholders.putIfAbsent(placeholder.name, placeholder)
-        Preconditions.checkState(
-                existing != placeholder,
-                "Trying to register placeholder '${placeholder.name}' which already exists"
-        )
+        val group = this.scopePlaceholders.computeIfAbsent(placeholder.scope) { mutableMapOf() }
+        val existing = group.putIfAbsent(placeholder.name, placeholder)
+
+        require(existing != null) { "Trying to register placeholder '${placeholder.name}' which already exists" }
+
+        if (placeholder.scope.global) {
+            globalPlaceholders[placeholder.name] = placeholder
+        }
 
         placeholder.aliases.forEach {
-            val v = this.placeholders.putIfAbsent(it, placeholder)
+            val v = group.putIfAbsent(it, placeholder)
 
             if (v != null && v != placeholder) {
-                this.logger.warning("Placeholder '${placeholder.name}' tried to register alias '$it' which is already used by a hologram '${v.name}'")
+                this.logger.warning("Placeholder '${placeholder.name}' tried to register alias '$it' which is already used by a placeholder '${v.name}'")
             }
         }
 
@@ -120,8 +138,10 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         }
     }
 
-    override fun getValue(key: String, visitor: Player?, defaultValue: String?, params: PlaceholderParameters): String? =
-            placeholders[key]?.getValue(params, visitor) ?: key
+    override fun getValue(key: String, visitor: Player?, defaultValue: String?, params: PlaceholderParameters, scope: Scope): String? {
+        return getPlaceholder(key)?.getValue(params, visitor) ?: key
+    }
+
 
     override fun translateString(input: String, visitor: Player?, matched: Collection<MatchedGroup>): String {
         val builder = StringBuilder(input)
@@ -140,13 +160,11 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         return builder.toString()
     }
 
-    override fun findPlaceholders(matched: Collection<MatchedGroup>): List<Placeholder<out Any?>> {
+    override fun findPlaceholders(matched: Collection<MatchedGroup>, scope: Scope): List<Placeholder<out Any?>> {
         val result = mutableListOf<Placeholder<out Any?>>()
 
         matched.forEach {
-            val found = placeholders[it.value]
-
-            if (found != null) {
+            getPlaceholder(it.value, scope)?.let { found ->
                 result.add(found)
             }
         }
@@ -154,7 +172,23 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         return result
     }
 
-    override fun getPlaceholder(key: String) = placeholders[key]
+    override fun getPlaceholder(key: String, scope: Scope): Placeholder<out Any?>? {
+        if (scope.global) {
+            return globalPlaceholders[key]
+        }
+
+        var current = scope
+
+        while (true) {
+            scopePlaceholders[scope]?.get(key)?.let {
+                return it
+            }
+
+            current = current.parent ?: break
+        }
+
+        return null
+    }
 
     override fun updatePlaceholder(key: String, visitor: Player?) {
         getPlaceholder(key)?.forceUpdate(player = visitor)
@@ -166,7 +200,26 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         }
     }
 
-    override fun getPlaceholders() = HashMap(placeholders)
+    override fun getPlaceholders(scope: Scope): PlaceholderGroup {
+        if (scope.global) {
+            return globalPlaceholders
+        }
+
+        val scopes = mutableListOf<Scope>()
+
+        while (true) {
+            scopes.add(scope.parent ?: break)
+        }
+
+        val placeholders = mutableMapOf<String, Placeholder<out Any?>>()
+        scopes.reversed().forEach {
+            scopePlaceholders[it]?.let { group ->
+                placeholders.putAll(group)
+            }
+        }
+
+        return placeholders
+    }
 
     override fun formatDate(millis: Long) = millis.formatAsTime("${configuration.dateFormat} ${configuration.timeFormat}")
 
@@ -215,42 +268,5 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         staticPlaceholder<String>("server_uptime", Function { (System.currentTimeMillis() - Nukkit.START_TIME).formatAsTime(configuration.timeFormat) })
 
         staticPlaceholder<String>("time", Function { formatTime(System.currentTimeMillis()) }, 10)
-    }
-
-    private fun optimisePlaceholders() { //TODO: finish later
-        val minGroupLength = 3
-
-        val groups = mutableMapOf<String, PlaceholderGroup>()
-
-        fun createGroups(placeholders: Map<String, Placeholder<Any>>): Map<String, PlaceholderGroup> {
-            val grps = mutableMapOf<String, PlaceholderGroup>()
-
-            for ((name, placeholder) in placeholders) {
-                val similar = mutableMapOf<String, Placeholder<Any>>()
-                val prefix = name.substring(0, minGroupLength)
-
-                for ((name_, placeholder_) in placeholders) {
-                    if (name_.startsWith(prefix)) {
-                        similar[name_.substring(minGroupLength)] = placeholder_
-                    }
-                }
-
-                if (similar.size > minGroupLength) {
-                    grps[prefix] = PlaceholderGroup(prefix, similar)
-                }
-            }
-
-            return grps
-        }
-
-        val depth = 0
-
-        while (true) {
-            var groupMap = groups
-
-            for (i in 0..depth) {
-
-            }
-        }
     }
 }

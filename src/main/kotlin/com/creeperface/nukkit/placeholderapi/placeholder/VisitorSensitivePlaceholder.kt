@@ -4,13 +4,30 @@ import cn.nukkit.Player
 import cn.nukkit.Server
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderUpdateEvent
+import com.creeperface.nukkit.placeholderapi.api.scope.Scope
 import java.util.*
 import java.util.function.BiFunction
 
 /**
  * @author CreeperFace
  */
-open class VisitorSensitivePlaceholder<T : Any?>(name: String, updateInterval: Int, autoUpdate: Boolean, aliases: Set<String>, processParameters: Boolean, private val loader: BiFunction<Player, PlaceholderParameters, T?>) : BasePlaceholder<T>(name, updateInterval, autoUpdate, aliases, processParameters) {
+open class VisitorSensitivePlaceholder<T : Any?>(
+        name: String,
+        updateInterval: Int,
+        autoUpdate: Boolean,
+        aliases: Set<String>,
+        processParameters: Boolean,
+        scope: Scope,
+        private val loader: BiFunction<Player, PlaceholderParameters, T?>
+
+) : BasePlaceholder<T>(
+        name,
+        updateInterval,
+        autoUpdate,
+        aliases,
+        processParameters,
+        scope
+) {
 
     private val cache = WeakHashMap<Player, Entry<T>>()
 
@@ -88,16 +105,16 @@ open class VisitorSensitivePlaceholder<T : Any?>(name: String, updateInterval: I
         if (player == null)
             return false
 
-        val value = cache[player]?.value ?: value
+        val oldValue = cache[player]?.value ?: value
 
-        if (!Objects.equals(value, newVal)) {
+        if (!Objects.equals(oldValue, newVal)) {
             Server.getInstance().scheduler.scheduleTask {
                 run {
-                    val ev = PlaceholderUpdateEvent(this, value, newVal, player)
+                    val ev = PlaceholderUpdateEvent(this, oldValue, newVal, player)
                     server.pluginManager.callEvent(ev)
                 }
 
-                changeListeners.forEach { _, listener -> listener.onChange(value, newVal, player) }
+                changeListeners.forEach { (_, listener) -> listener.onChange(oldValue, newVal, player) }
             }
 
             this.value = newVal

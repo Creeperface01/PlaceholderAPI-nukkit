@@ -7,13 +7,14 @@ import com.creeperface.nukkit.placeholderapi.api.Placeholder
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderChangeListener
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderUpdateEvent
+import com.creeperface.nukkit.placeholderapi.api.scope.Scope
 import com.creeperface.nukkit.placeholderapi.util.toFormattedString
 import java.util.*
 
 /**
  * @author CreeperFace
  */
-abstract class BasePlaceholder<T : Any?>(override val name: String, override val updateInterval: Int, override val autoUpdate: Boolean, override val aliases: Set<String>, override val processParameters: Boolean) : Placeholder<T> {
+abstract class BasePlaceholder<T : Any?>(override val name: String, override val updateInterval: Int, override val autoUpdate: Boolean, override val aliases: Set<String>, override val processParameters: Boolean, override val scope: Scope) : Placeholder<T> {
 
     protected val changeListeners = mutableMapOf<Plugin, PlaceholderChangeListener<T>>()
 
@@ -67,7 +68,7 @@ abstract class BasePlaceholder<T : Any?>(override val name: String, override val
                     server.pluginManager.callEvent(ev)
                 }
 
-                changeListeners.forEach { _, listener -> listener.onChange(value, newVal, player) }
+                changeListeners.forEach { (_, listener) -> listener.onChange(value, newVal, player) }
             }
 
             this.value = newVal

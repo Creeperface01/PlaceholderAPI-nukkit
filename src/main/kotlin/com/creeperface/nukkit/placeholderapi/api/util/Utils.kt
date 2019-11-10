@@ -1,11 +1,14 @@
 package com.creeperface.nukkit.placeholderapi.api.util
 
+import com.creeperface.nukkit.placeholderapi.api.Placeholder
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
 import java.util.regex.Pattern
 
 /**
  * @author CreeperFace
  */
+
+typealias PlaceholderGroup = MutableMap<String, Placeholder<out Any?>>
 
 private val pattern = Pattern.compile("%((?<ph>\\w+)(<(?<params>.+)>)?)%")
 

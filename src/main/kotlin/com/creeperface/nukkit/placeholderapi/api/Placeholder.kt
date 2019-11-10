@@ -3,6 +3,7 @@ package com.creeperface.nukkit.placeholderapi.api
 import cn.nukkit.Player
 import cn.nukkit.plugin.Plugin
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderChangeListener
+import com.creeperface.nukkit.placeholderapi.api.scope.Scope
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
@@ -37,6 +38,11 @@ interface Placeholder<T> {
      * @note set this to false if you don't handle parameters for better performance
      */
     val processParameters: Boolean
+
+    /**
+     * A scope where this placeholder can be applied
+     */
+    val scope: Scope
 
     @JvmDefault
     fun getValue() = getValue(PlaceholderParameters.EMPTY, null)
