@@ -33,7 +33,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
     override val globalScope = GlobalScope
 
     private val globalPlaceholders = mutableMapOf<String, Placeholder<out Any?>>()
-    private val scopePlaceholders = mutableMapOf<Scope, PlaceholderGroup>()
+    private val scopePlaceholders = mutableMapOf<Scope<*>, PlaceholderGroup>()
 
     private val updatePlaceholders = mutableMapOf<String, Placeholder<out Any?>>()
 
@@ -75,11 +75,11 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
 
     override fun <T> staticPlaceholder(
             name: String,
-            loader: Function<PlaceholderParameters, T?>,
+            loader: (PlaceholderParameters, Scope<*>.Context) -> T?,
             updateInterval: Int,
             autoUpdate: Boolean,
             processParameters: Boolean,
-            scope: Scope,
+            scope: Scope<*>,
             vararg aliases: String) where T : Any? {
         registerPlaceholder(
                 StaticPlaceHolder(
@@ -96,11 +96,11 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
 
     override fun <T> visitorSensitivePlaceholder(
             name: String,
-            loader: BiFunction<Player, PlaceholderParameters, T?>,
+            loader: (Player, PlaceholderParameters, Scope<*>.Context) -> T?,
             updateInterval: Int,
             autoUpdate: Boolean,
             processParameters: Boolean,
-            scope: Scope,
+            scope: Scope<*>,
             vararg aliases: String) where T : Any? {
         registerPlaceholder(
                 VisitorSensitivePlaceholder(
@@ -138,8 +138,8 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         }
     }
 
-    override fun getValue(key: String, visitor: Player?, defaultValue: String?, params: PlaceholderParameters, scope: Scope): String? {
-        return getPlaceholder(key)?.getValue(params, visitor) ?: key
+    override fun getValue(key: String, visitor: Player?, defaultValue: String?, params: PlaceholderParameters, context: Scope<*>.Context): String? {
+        return getPlaceholder(key)?.getValue(params, context, visitor) ?: key
     }
 
 
@@ -160,7 +160,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         return builder.toString()
     }
 
-    override fun findPlaceholders(matched: Collection<MatchedGroup>, scope: Scope): List<Placeholder<out Any?>> {
+    override fun findPlaceholders(matched: Collection<MatchedGroup>, scope: Scope<*>): List<Placeholder<out Any?>> {
         val result = mutableListOf<Placeholder<out Any?>>()
 
         matched.forEach {
@@ -172,7 +172,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         return result
     }
 
-    override fun getPlaceholder(key: String, scope: Scope): Placeholder<out Any?>? {
+    override fun getPlaceholder(key: String, scope: Scope<*>): Placeholder<out Any?>? {
         if (scope.global) {
             return globalPlaceholders[key]
         }
@@ -200,12 +200,12 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         }
     }
 
-    override fun getPlaceholders(scope: Scope): PlaceholderGroup {
+    override fun getPlaceholders(scope: Scope<*>): PlaceholderGroup {
         if (scope.global) {
             return globalPlaceholders
         }
 
-        val scopes = mutableListOf<Scope>()
+        val scopes = mutableListOf<Scope<*>>()
 
         while (true) {
             scopes.add(scope.parent ?: break)
@@ -228,45 +228,44 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
     override fun formatBoolean(value: Boolean) = value.toFormatString()
 
     private fun registerDefaultPlaceholders() {
-        visitorSensitivePlaceholder<String>("player", BiFunction { p, _ -> p.name }, "playername")
-        visitorSensitivePlaceholder<String>("player_displayname", BiFunction { p, _ -> p.displayName })
-        visitorSensitivePlaceholder<UUID>("player_uuid", BiFunction { p, _ -> p.uniqueId })
-        visitorSensitivePlaceholder<Int>("player_ping", BiFunction { p, _ -> p.ping })
-        visitorSensitivePlaceholder<String?>("player_level", BiFunction { p, _ -> p.level?.name })
-        visitorSensitivePlaceholder<Boolean?>("player_can_fly", BiFunction { p, _ -> p.adventureSettings?.get(AdventureSettings.Type.ALLOW_FLIGHT) })
-        visitorSensitivePlaceholder<Boolean?>("player_flying", BiFunction { p, _ -> p.adventureSettings?.get(AdventureSettings.Type.FLYING) })
-        visitorSensitivePlaceholder<Float>("player_health", BiFunction { p, _ -> p.health })
-        visitorSensitivePlaceholder<Int>("player_max_health", BiFunction { p, _ -> p.maxHealth })
-        visitorSensitivePlaceholder<Float>("player_saturation", BiFunction { p, _ -> p.foodData.foodSaturationLevel })
-        visitorSensitivePlaceholder<Int>("player_food", BiFunction { p, _ -> p.foodData.level })
-        visitorSensitivePlaceholder<String?>("player_gamemode", BiFunction { p, _ -> Server.getGamemodeString(p.gamemode, true) })
-        visitorSensitivePlaceholder<Double>("player_x", BiFunction { p, _ -> p.x.round(configuration.coordsAccuracy) }, 0)
-        visitorSensitivePlaceholder<Double>("player_y", BiFunction { p, _ -> p.y.round(configuration.coordsAccuracy) }, 0)
-        visitorSensitivePlaceholder<Double>("player_z", BiFunction { p, _ -> p.z.round(configuration.coordsAccuracy) }, 0)
-        visitorSensitivePlaceholder<String>("player_direction", BiFunction { p, _ -> p.direction.getName() }, 10)
-        visitorSensitivePlaceholder<Int>("player_exp", BiFunction { p, _ -> p.experience }, "player_exp_total")
-        visitorSensitivePlaceholder<Int>("", BiFunction { p, _ -> p.experience })
-        visitorSensitivePlaceholder<Int>("player_exp_to_next", BiFunction { p, _ -> Player.calculateRequireExperience(p.experienceLevel + 1) })
-        visitorSensitivePlaceholder<Int>("player_exp_level", BiFunction { p, _ -> p.experienceLevel })
-        visitorSensitivePlaceholder<Float>("player_speed", BiFunction { p, _ -> p.movementSpeed })
-        visitorSensitivePlaceholder<Int>("player_max_air", BiFunction { p, _ -> p.getDataPropertyInt(Entity.DATA_MAX_AIR) }, 100)
-        visitorSensitivePlaceholder<Int>("player_remaining_air", BiFunction { p, _ -> p.getDataPropertyInt(Entity.DATA_AIR) }, 10)
-        visitorSensitivePlaceholder<String?>("player_item_in_hand", BiFunction { p, _ -> p.inventory?.itemInHand?.name }, 10)
+        buildVisitorSensitive<String>("player", BiFunction { p, _ -> p.name }).aliases("playername").build()
+        buildVisitorSensitive<String>("player_displayname", BiFunction { p, _ -> p.displayName }).aliases().build()
+        buildVisitorSensitive<UUID>("player_uuid", BiFunction { p, _ -> p.uniqueId }).aliases().build()
+        buildVisitorSensitive<Int>("player_ping", BiFunction { p, _ -> p.ping }).aliases().build()
+        buildVisitorSensitive<String>("player_level", BiFunction { p, _ -> p.level?.name }).aliases().build()
+        buildVisitorSensitive<Boolean>("player_can_fly", BiFunction { p, _ -> p.adventureSettings?.get(AdventureSettings.Type.ALLOW_FLIGHT) }).aliases().build()
+        buildVisitorSensitive<Boolean>("player_flying", BiFunction { p, _ -> p.adventureSettings?.get(AdventureSettings.Type.FLYING) }).aliases().build()
+        buildVisitorSensitive<Float>("player_health", BiFunction { p, _ -> p.health }).aliases().build()
+        buildVisitorSensitive<Int>("player_max_health", BiFunction { p, _ -> p.maxHealth }).aliases().build()
+        buildVisitorSensitive<Float>("player_saturation", BiFunction { p, _ -> p.foodData.foodSaturationLevel }).aliases().build()
+        buildVisitorSensitive<Int>("player_food", BiFunction { p, _ -> p.foodData.level }).aliases().build()
+        buildVisitorSensitive<String>("player_gamemode", BiFunction { p, _ -> Server.getGamemodeString(p.gamemode, true) }).aliases().build()
+        buildVisitorSensitive<Double>("player_x", BiFunction { p, _ -> p.x.round(configuration.coordsAccuracy) }).updateInterval(0).build()
+        buildVisitorSensitive<Double>("player_y", BiFunction { p, _ -> p.y.round(configuration.coordsAccuracy) }).updateInterval(0).build()
+        buildVisitorSensitive<Double>("player_z", BiFunction { p, _ -> p.z.round(configuration.coordsAccuracy) }).updateInterval(0).build()
+        buildVisitorSensitive<String>("player_direction", BiFunction { p, _ -> p.direction.getName() }).updateInterval(10).build()
+        buildVisitorSensitive<Int>("player_exp", BiFunction { p, _ -> p.experience }).aliases("player_exp_total").build()
+        buildVisitorSensitive<Int>("player_exp_to_next", BiFunction { p, _ -> Player.calculateRequireExperience(p.experienceLevel + 1) }).aliases().build()
+        buildVisitorSensitive<Int>("player_exp_level", BiFunction { p, _ -> p.experienceLevel }).aliases().build()
+        buildVisitorSensitive<Float>("player_speed", BiFunction { p, _ -> p.movementSpeed }).aliases().build()
+        buildVisitorSensitive<Int>("player_max_air", BiFunction { p, _ -> p.getDataPropertyInt(Entity.DATA_MAX_AIR) }).updateInterval(100).build()
+        buildVisitorSensitive<Int>("player_remaining_air", BiFunction { p, _ -> p.getDataPropertyInt(Entity.DATA_AIR) }).updateInterval(10).build()
+        buildVisitorSensitive<String?>("player_item_in_hand", BiFunction { p, _ -> p.inventory?.itemInHand?.name }).updateInterval(10).build()
 
         val server = this.server
         val runtime = Runtime.getRuntime()
 
-        staticPlaceholder<Int>("server_online", Function { server.onlinePlayers.size })
-        staticPlaceholder<Int>("server_max_players", Function { server.maxPlayers })
-        staticPlaceholder<String>("server_motd", Function { server.network.name })
-        staticPlaceholder<Double>("server_ram_used", Function { (runtime.totalMemory() - runtime.freeMemory()).bytes2MB().round(configuration.coordsAccuracy) })
-        staticPlaceholder<Double>("server_ram_free", Function { runtime.freeMemory().bytes2MB().round(configuration.coordsAccuracy) })
-        staticPlaceholder<Double>("server_ram_total", Function { runtime.totalMemory().bytes2MB().round(configuration.coordsAccuracy) })
-        staticPlaceholder<Double>("server_ram_max", Function { runtime.maxMemory().bytes2MB().round(configuration.coordsAccuracy) })
-        staticPlaceholder<Int>("server_cores", Function { runtime.availableProcessors() })
-        staticPlaceholder<Float>("server_tps", Function { server.ticksPerSecondAverage })
-        staticPlaceholder<String>("server_uptime", Function { (System.currentTimeMillis() - Nukkit.START_TIME).formatAsTime(configuration.timeFormat) })
+        buildStatic<Int>("server_online", Function { server.onlinePlayers.size }).aliases().build()
+        buildStatic<Int>("server_max_players", Function { server.maxPlayers }).aliases().build()
+        buildStatic<String>("server_motd", Function { server.network.name }).aliases().build()
+        buildStatic<Double>("server_ram_used", Function { (runtime.totalMemory() - runtime.freeMemory()).bytes2MB().round(configuration.coordsAccuracy) }).aliases().build()
+        buildStatic<Double>("server_ram_free", Function { runtime.freeMemory().bytes2MB().round(configuration.coordsAccuracy) }).aliases().build()
+        buildStatic<Double>("server_ram_total", Function { runtime.totalMemory().bytes2MB().round(configuration.coordsAccuracy) }).aliases().build()
+        buildStatic<Double>("server_ram_max", Function { runtime.maxMemory().bytes2MB().round(configuration.coordsAccuracy) }).aliases().build()
+        buildStatic<Int>("server_cores", Function { runtime.availableProcessors() }).aliases().build()
+        buildStatic<Float>("server_tps", Function { server.ticksPerSecondAverage }).aliases().build()
+        buildStatic<String>("server_uptime", Function { (System.currentTimeMillis() - Nukkit.START_TIME).formatAsTime(configuration.timeFormat) }).aliases().build()
 
-        staticPlaceholder<String>("time", Function { formatTime(System.currentTimeMillis()) }, 10)
+        buildStatic<String>("time", Function { formatTime(System.currentTimeMillis()) }).updateInterval(10).build()
     }
 }

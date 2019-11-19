@@ -14,7 +14,7 @@ import java.util.*
 /**
  * @author CreeperFace
  */
-abstract class BasePlaceholder<T : Any?>(override val name: String, override val updateInterval: Int, override val autoUpdate: Boolean, override val aliases: Set<String>, override val processParameters: Boolean, override val scope: Scope) : Placeholder<T> {
+abstract class BasePlaceholder<T : Any?>(override val name: String, override val updateInterval: Int, override val autoUpdate: Boolean, override val aliases: Set<String>, override val processParameters: Boolean, override val scope: Scope<*>) : Placeholder<T> {
 
     protected val changeListeners = mutableMapOf<Plugin, PlaceholderChangeListener<T>>()
 
@@ -36,11 +36,11 @@ abstract class BasePlaceholder<T : Any?>(override val name: String, override val
         return value
     }
 
-    override fun updateOrExecute(parameters: PlaceholderParameters, player: Player?, action: Runnable) {
+    override fun updateOrExecute(parameters: PlaceholderParameters, context: Scope<*>.Context, player: Player?, action: Runnable) {
         var updated = false
 
         if (value == null || readyToUpdate()) {
-            updated = checkForUpdate(parameters, player)
+            updated = checkForUpdate(parameters, context, player)
         }
 
         if (!updated) {
@@ -48,16 +48,16 @@ abstract class BasePlaceholder<T : Any?>(override val name: String, override val
         }
     }
 
-    protected abstract fun loadValue(parameters: PlaceholderParameters, player: Player? = null): T?
+    protected abstract fun loadValue(parameters: PlaceholderParameters, context: Scope<*>.Context, player: Player? = null): T?
 
     protected fun safeValue() = value?.toFormattedString() ?: name
 
     @JvmOverloads
-    protected fun checkForUpdate(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, player: Player? = null, force: Boolean = false): Boolean {
+    protected fun checkForUpdate(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: Scope<*>.Context = scope.defaultContext, player: Player? = null, force: Boolean = false): Boolean {
         if (!force && !readyToUpdate())
             return false
 
-        return checkValueUpdate(value, loadValue(parameters, player), player)
+        return checkValueUpdate(value, loadValue(parameters, context, player), player)
     }
 
     protected open fun checkValueUpdate(value: T?, newVal: T?, player: Player? = null): Boolean {

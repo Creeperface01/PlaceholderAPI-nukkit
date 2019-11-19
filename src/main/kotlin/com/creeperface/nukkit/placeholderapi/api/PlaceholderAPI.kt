@@ -16,9 +16,13 @@ import java.util.function.Function
  */
 interface PlaceholderAPI {
 
-    val globalScope: Scope
+    val globalScope: Scope<*>
 
     @JvmDefault
+    @Deprecated("Use builder instead", ReplaceWith("buildStatic(name, loader)" +
+            ".aliases(*aliases)" +
+            ".build()"
+    ))
     fun <T> staticPlaceholder(
             name: String,
             loader: Function<PlaceholderParameters, T?>,
@@ -32,6 +36,10 @@ interface PlaceholderAPI {
     )
 
     @JvmDefault
+    @Deprecated("Use builder instead", ReplaceWith("buildStatic(name, loader)" +
+            ".updateInterval(updateInterval)" +
+            ".build()"
+    ))
     fun <T> staticPlaceholder(
             name: String,
             loader: Function<PlaceholderParameters, T?>,
@@ -43,6 +51,12 @@ interface PlaceholderAPI {
             false
     )
 
+    @Deprecated("Use builder instead", ReplaceWith("buildStatic(name, loader)" +
+            ".updateInterval(updateInterval)" +
+            ".autoUpdate(autoUpdate)" +
+            ".aliases(*aliases)" +
+            ".build()"
+    ))
     fun <T> staticPlaceholder(
             name: String,
             loader: Function<PlaceholderParameters, T?>,
@@ -58,6 +72,13 @@ interface PlaceholderAPI {
             aliases = *aliases
     )
 
+    @Deprecated("Use builder instead", ReplaceWith("buildStatic(name, loader)" +
+            ".updateInterval(updateInterval)" +
+            ".autoUpdate(autoUpdate)" +
+            ".processParameters(processParameters)" +
+            ".aliases(*aliases)" +
+            ".build()"
+    ))
     fun <T> staticPlaceholder(
             name: String,
             loader: Function<PlaceholderParameters, T?>,
@@ -75,18 +96,46 @@ interface PlaceholderAPI {
             *aliases
     )
 
+    @Deprecated("Use builder instead", ReplaceWith("buildStatic(name, loader)" +
+            ".updateInterval(updateInterval)" +
+            ".autoUpdate(autoUpdate)" +
+            ".processParameters(processParameters)" +
+            ".scope(scope)" +
+            ".aliases(*aliases)" +
+            ".build()"
+    ))
     fun <T> staticPlaceholder(
             name: String,
             loader: Function<PlaceholderParameters, T?>,
             updateInterval: Int = -1,
             autoUpdate: Boolean = false,
             processParameters: Boolean = false,
-            scope: Scope = GlobalScope,
+            scope: Scope<*> = GlobalScope,
+            vararg aliases: String
+    ) where T : Any? = staticPlaceholder(
+            name,
+            { params, _ -> loader.apply(params) },
+            updateInterval,
+            autoUpdate, processParameters,
+            scope,
+            *aliases
+    )
+
+    fun <T> staticPlaceholder(
+            name: String,
+            loader: (PlaceholderParameters, Scope<*>.Context) -> T?,
+            updateInterval: Int = -1,
+            autoUpdate: Boolean = false,
+            processParameters: Boolean = false,
+            scope: Scope<*> = GlobalScope,
             vararg aliases: String
     ) where T : Any?
 
-
     @JvmDefault
+    @Deprecated("Use builder instead", ReplaceWith("buildVisitorSensitive(name, loader)" +
+            ".aliases(*aliases)" +
+            ".build()"
+    ))
     fun <T> visitorSensitivePlaceholder(
             name: String,
             loader: BiFunction<Player, PlaceholderParameters, T?>,
@@ -99,6 +148,10 @@ interface PlaceholderAPI {
             *aliases
     )
 
+    @Deprecated("Use builder instead", ReplaceWith("buildVisitorSensitive(name, loader)" +
+            ".updateInterval(updateInterval)" +
+            ".build()"
+    ))
     fun <T> visitorSensitivePlaceholder(
             name: String,
             loader: BiFunction<Player, PlaceholderParameters, T?>,
@@ -110,6 +163,12 @@ interface PlaceholderAPI {
             false
     )
 
+    @Deprecated("Use builder instead", ReplaceWith("buildVisitorSensitive(name, loader)" +
+            ".updateInterval(updateInterval)" +
+            ".autoUpdate(autoUpdate)" +
+            ".aliases(*aliases)" +
+            ".build()"
+    ))
     fun <T> visitorSensitivePlaceholder(
             name: String,
             loader: BiFunction<Player, PlaceholderParameters, T?>,
@@ -124,6 +183,13 @@ interface PlaceholderAPI {
             processParameters = false
     )
 
+    @Deprecated("Use builder instead", ReplaceWith("buildVisitorSensitive(name, loader)" +
+            ".updateInterval(updateInterval)" +
+            ".autoUpdate(autoUpdate)" +
+            ".processParameters(processParameters)" +
+            ".aliases(*aliases)" +
+            ".build()"
+    ))
     fun <T> visitorSensitivePlaceholder(
             name: String,
             loader: BiFunction<Player, PlaceholderParameters, T?>,
@@ -141,13 +207,39 @@ interface PlaceholderAPI {
             *aliases
     )
 
+    @Deprecated("Use builder instead", ReplaceWith("buildVisitorSensitive(name, loader)" +
+            ".updateInterval(updateInterval)" +
+            ".autoUpdate(autoUpdate)" +
+            ".processParameters(processParameters)" +
+            ".scope(scope)" +
+            ".aliases(*aliases)" +
+            ".build()"
+    ))
     fun <T> visitorSensitivePlaceholder(
             name: String,
             loader: BiFunction<Player, PlaceholderParameters, T?>,
             updateInterval: Int = -1,
             autoUpdate: Boolean = false,
             processParameters: Boolean = false,
-            scope: Scope = GlobalScope,
+            scope: Scope<*> = GlobalScope,
+            vararg aliases: String
+    ) where T : Any? = visitorSensitivePlaceholder(
+            name,
+            { player, placeholderParameters, _ -> loader.apply(player, placeholderParameters) },
+            updateInterval,
+            autoUpdate,
+            processParameters,
+            scope,
+            *aliases
+    )
+
+    fun <T> visitorSensitivePlaceholder(
+            name: String,
+            loader: (Player, PlaceholderParameters, Scope<*>.Context) -> T?,
+            updateInterval: Int = -1,
+            autoUpdate: Boolean = false,
+            processParameters: Boolean = false,
+            scope: Scope<*> = GlobalScope,
             vararg aliases: String
     ) where T : Any?
 
@@ -156,12 +248,12 @@ interface PlaceholderAPI {
     @JvmDefault
     fun getPlaceholder(key: String) = getPlaceholder(key, GlobalScope)
 
-    fun getPlaceholder(key: String, scope: Scope = GlobalScope): Placeholder<out Any?>?
+    fun getPlaceholder(key: String, scope: Scope<*> = GlobalScope): Placeholder<out Any?>?
 
     @JvmDefault
     fun getPlaceholders() = getPlaceholders(GlobalScope)
 
-    fun getPlaceholders(scope: Scope = GlobalScope): PlaceholderGroup
+    fun getPlaceholders(scope: Scope<*> = GlobalScope): PlaceholderGroup
 
     @JvmDefault
     fun getValue(key: String) = getValue(key, null)
@@ -181,14 +273,14 @@ interface PlaceholderAPI {
             visitor: Player? = null,
             defaultValue: String? = key,
             params: PlaceholderParameters = PlaceholderParameters.EMPTY
-    ) = getValue(key, visitor, defaultValue, params, GlobalScope)
+    ) = getValue(key, visitor, defaultValue, params, GlobalScope.defaultContext)
 
     fun getValue(
             key: String,
             visitor: Player? = null,
             defaultValue: String? = key,
             params: PlaceholderParameters = PlaceholderParameters.EMPTY,
-            scope: Scope = GlobalScope
+            context: Scope<*>.Context = GlobalScope.defaultContext
     ): String?
 
     @JvmDefault
@@ -207,9 +299,9 @@ interface PlaceholderAPI {
 
     fun translateString(input: String, visitor: Player?, matched: Collection<MatchedGroup>): String
 
-    fun findPlaceholders(input: String, scope: Scope = GlobalScope) = findPlaceholders(input.matchPlaceholders(), scope)
+    fun findPlaceholders(input: String, scope: Scope<*> = GlobalScope) = findPlaceholders(input.matchPlaceholders(), scope)
 
-    fun findPlaceholders(matched: Collection<MatchedGroup>, scope: Scope = GlobalScope): List<Placeholder<out Any?>>
+    fun findPlaceholders(matched: Collection<MatchedGroup>, scope: Scope<*> = GlobalScope): List<Placeholder<out Any?>>
 
     fun formatTime(millis: Long): String
 
@@ -224,15 +316,30 @@ interface PlaceholderAPI {
             loader
     )
 
+    fun <T> buildStatic(name: String, loader: (PlaceholderParameters, Scope<*>.Context) -> T?) = StaticBuilder(
+            name,
+            loader
+    )
+
     fun <T> buildVisitorSensitive(name: String, loader: BiFunction<Player, PlaceholderParameters, T?>) = VisitorBuilder(
+            name,
+            loader
+    )
+
+    fun <T> buildVisitorSensitive(name: String, loader: (Player, PlaceholderParameters, Scope<*>.Context) -> T?) = VisitorBuilder(
             name,
             loader
     )
 
     class StaticBuilder<T> internal constructor(
             name: String,
-            private val loader: Function<PlaceholderParameters, T?>
+            private val loader: (PlaceholderParameters, scopeContext: Scope<*>.Context) -> T?
     ) : Builder<T, StaticBuilder<T>>(name) {
+
+        internal constructor(
+                name: String,
+                loader: Function<PlaceholderParameters, T?>
+        ) : this(name, { parameters, _ -> loader.apply(parameters) })
 
         override fun build() {
             getInstance().staticPlaceholder(
@@ -249,8 +356,13 @@ interface PlaceholderAPI {
 
     class VisitorBuilder<T> internal constructor(
             name: String,
-            private val loader: BiFunction<Player, PlaceholderParameters, T?>
+            private val loader: (Player, PlaceholderParameters, Scope<*>.Context) -> T?
     ) : Builder<T, StaticBuilder<T>>(name) {
+
+        internal constructor(
+                name: String,
+                loader: BiFunction<Player, PlaceholderParameters, T?>
+        ) : this(name, { player, parameters, _ -> loader.apply(player, parameters) })
 
         override fun build() {
             getInstance().visitorSensitivePlaceholder(
@@ -277,25 +389,30 @@ interface PlaceholderAPI {
         protected var autoUpdate = false
         protected var aliases = emptyArray<String>()
         protected var processParameters = false
-        protected var scope: Scope = GlobalScope
+        protected var scope: Scope<*> = GlobalScope
 
-        fun setUpdateInterval(updateInterval: Int): B {
+        fun updateInterval(updateInterval: Int): B {
             this.updateInterval = updateInterval
             return self
         }
 
-        fun setAutoUpdate(autoUpdate: Boolean): B {
+        fun autoUpdate(autoUpdate: Boolean): B {
             this.autoUpdate = autoUpdate
             return self
         }
 
-        fun setAliases(vararg aliases: String): B {
+        fun aliases(vararg aliases: String): B {
             this.aliases = arrayOf(*aliases)
             return self
         }
 
-        fun setScope(scope: Scope): B {
+        fun scope(scope: Scope<*>): B {
             this.scope = scope
+            return self
+        }
+
+        fun processParameters(processParameters: Boolean): B {
+            this.processParameters = processParameters
             return self
         }
 

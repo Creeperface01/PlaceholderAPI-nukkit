@@ -3,7 +3,6 @@ package com.creeperface.nukkit.placeholderapi.placeholder
 import cn.nukkit.Player
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
 import com.creeperface.nukkit.placeholderapi.api.scope.Scope
-import java.util.function.Function
 
 /**
  * @author CreeperFace
@@ -14,8 +13,8 @@ open class StaticPlaceHolder<T : Any?>(
         autoUpdate: Boolean,
         aliases: Set<String>,
         processParameters: Boolean,
-        scope: Scope,
-        private val loader: Function<PlaceholderParameters, T?>
+        scope: Scope<*>,
+        private val loader: (PlaceholderParameters, Scope<*>.Context) -> T?
 
 ) : BasePlaceholder<T>(
         name,
@@ -26,8 +25,8 @@ open class StaticPlaceHolder<T : Any?>(
         scope
 ) {
 
-    override fun loadValue(parameters: PlaceholderParameters, player: Player?): T? {
-        return loader.apply(parameters)
+    override fun loadValue(parameters: PlaceholderParameters, context: Scope<*>.Context, player: Player?): T? {
+        return loader(parameters, context)
     }
 
     override fun forceUpdate(parameters: PlaceholderParameters, player: Player?): String {
