@@ -22,16 +22,16 @@ abstract class BasePlaceholder<T : Any?>(override val name: String, override val
     var lastUpdate: Long = 0
     val server: Server = Server.getInstance()
 
-    override fun getValue(parameters: PlaceholderParameters, player: Player?): String {
+    override fun getValue(parameters: PlaceholderParameters, context: Scope<*>.Context, player: Player?): String {
         if (value == null || readyToUpdate()) {
-            checkForUpdate(player = player)
+            checkForUpdate(parameters, player = player, context = context)
         }
 
         return safeValue()
     }
 
-    override fun getDirectValue(parameters: PlaceholderParameters, player: Player?): T? {
-        getValue(parameters, player)
+    override fun getDirectValue(parameters: PlaceholderParameters, context: Scope<*>.Context, player: Player?): T? {
+        getValue(parameters, context, player)
 
         return value
     }

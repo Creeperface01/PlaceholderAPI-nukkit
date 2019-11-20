@@ -57,7 +57,10 @@ interface Placeholder<T> {
     fun getDirectValue(player: Player? = null) = getDirectValue(PlaceholderParameters.EMPTY, player)
 
     @JvmDefault
-    fun getDirectValue(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, player: Player? = null): T?
+    fun getDirectValue(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, player: Player? = null) = getDirectValue(parameters, scope.defaultContext, player)
+
+    @JvmDefault
+    fun getDirectValue(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: Scope<*>.Context = scope.defaultContext, player: Player? = null): T?
 
     @JvmDefault
     fun forceUpdate(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: Scope<*>.Context = scope.defaultContext, player: Player? = null): String

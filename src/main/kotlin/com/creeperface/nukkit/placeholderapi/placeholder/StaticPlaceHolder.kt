@@ -29,7 +29,7 @@ open class StaticPlaceHolder<T : Any?>(
         return loader(parameters, context)
     }
 
-    override fun forceUpdate(parameters: PlaceholderParameters, player: Player?): String {
+    override fun forceUpdate(parameters: PlaceholderParameters, context: Scope<*>.Context, player: Player?): String {
         checkForUpdate(parameters)
 
         return safeValue()
