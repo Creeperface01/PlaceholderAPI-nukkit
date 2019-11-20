@@ -13,7 +13,7 @@ abstract class Scope<T> {
     open val defaultContext: Context
         get() = throw UnsupportedOperationException("Scope ${this::class.java.name} doesn't have default scope")
 
-    open fun hasDefaultScope() = false
+    open fun hasDefaultContext() = false
 
     inner class Context(val context: T, val scope: Scope<T> = this)
 }

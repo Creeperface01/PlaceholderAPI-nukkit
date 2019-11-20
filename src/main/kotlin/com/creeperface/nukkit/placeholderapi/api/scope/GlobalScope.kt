@@ -8,5 +8,5 @@ object GlobalScope : Scope<Any?>() {
 
     override val defaultContext = Context(this)
 
-    override fun hasDefaultScope() = true
+    override fun hasDefaultContext() = true
 }
