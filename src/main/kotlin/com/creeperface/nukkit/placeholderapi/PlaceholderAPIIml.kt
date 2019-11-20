@@ -119,7 +119,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         val group = this.scopePlaceholders.computeIfAbsent(placeholder.scope) { mutableMapOf() }
         val existing = group.putIfAbsent(placeholder.name, placeholder)
 
-        require(existing != null) { "Trying to register placeholder '${placeholder.name}' which already exists" }
+        require(existing == null) { "Trying to register placeholder '${placeholder.name}' which already exists" }
 
         if (placeholder.scope.global) {
             globalPlaceholders[placeholder.name] = placeholder
