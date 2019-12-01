@@ -357,7 +357,7 @@ interface PlaceholderAPI {
     class VisitorBuilder<T> internal constructor(
             name: String,
             private val loader: (Player, PlaceholderParameters, Scope<*>.Context) -> T?
-    ) : Builder<T, StaticBuilder<T>>(name) {
+    ) : Builder<T, VisitorBuilder<T>>(name) {
 
         internal constructor(
                 name: String,

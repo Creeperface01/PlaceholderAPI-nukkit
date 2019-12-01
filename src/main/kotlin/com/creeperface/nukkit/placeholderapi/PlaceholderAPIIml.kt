@@ -60,14 +60,14 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
     }
 
     init {
-        registerDefaultPlaceholders()
-
         saveDefaultConfig()
         configuration = Configuration(this)
         configuration.load()
     }
 
     internal fun init() {
+        registerDefaultPlaceholders()
+
         this.server.scheduler.scheduleRepeatingTask(this, { updatePlaceholders() }, configuration.updateInterval)
 
         this.server.commandMap.register("placeholder", PlaceholderCommand())
