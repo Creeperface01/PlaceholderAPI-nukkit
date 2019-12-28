@@ -6,7 +6,7 @@ object GlobalScope : Scope<Any?>() {
 
     override val parent: Nothing? = null
 
-    override val defaultContext = Context(this)
+    override val defaultContext = Context(null)
 
     override fun hasDefaultContext() = true
 }

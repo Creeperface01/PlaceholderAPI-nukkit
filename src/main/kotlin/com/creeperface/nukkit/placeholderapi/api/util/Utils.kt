@@ -2,6 +2,7 @@ package com.creeperface.nukkit.placeholderapi.api.util
 
 import com.creeperface.nukkit.placeholderapi.api.Placeholder
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
+import com.creeperface.nukkit.placeholderapi.api.scope.Scope
 import java.util.regex.Pattern
 
 /**
@@ -9,6 +10,9 @@ import java.util.regex.Pattern
  */
 
 typealias PlaceholderGroup = MutableMap<String, Placeholder<out Any?>>
+
+typealias AnyScope = Scope<out Any?>
+typealias AnyContext = Scope<out Any?>.Context
 
 private val pattern = Pattern.compile("%((?<ph>\\w+)(<(?<params>.+)>)?)%")
 

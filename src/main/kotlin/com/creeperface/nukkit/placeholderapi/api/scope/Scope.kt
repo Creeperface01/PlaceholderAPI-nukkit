@@ -15,5 +15,27 @@ abstract class Scope<T> {
 
     open fun hasDefaultContext() = false
 
-    inner class Context(val context: T, val scope: Scope<T> = this)
+    inner class Context(val context: T, val scope: Scope<T> = this, parentContext: Context? = null) {
+
+        val parentContext: Scope<*>.Context?
+
+        init {
+            this.parentContext = when (parentContext) {
+                null -> {
+                    scope.parent.let { parentScope ->
+                        if (parentScope == null) {
+                            return@let null
+                        }
+
+                        if (parentScope.hasDefaultContext()) {
+                            parentScope.defaultContext
+                        } else {
+                            null
+                        }
+                    }
+                }
+                else -> parentContext
+            }
+        }
+    }
 }
