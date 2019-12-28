@@ -3,7 +3,8 @@ package com.creeperface.nukkit.placeholderapi.api
 import cn.nukkit.Player
 import cn.nukkit.plugin.Plugin
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderChangeListener
-import com.creeperface.nukkit.placeholderapi.api.scope.Scope
+import com.creeperface.nukkit.placeholderapi.api.util.AnyContext
+import com.creeperface.nukkit.placeholderapi.api.util.AnyScope
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
@@ -42,7 +43,7 @@ interface Placeholder<T> {
     /**
      * A scope where this placeholder can be applied
      */
-    val scope: Scope<*>
+    val scope: AnyScope
 
     @JvmDefault
     fun getValue() = getValue(PlaceholderParameters.EMPTY, scope.defaultContext, null)
@@ -51,7 +52,7 @@ interface Placeholder<T> {
     fun getValue(player: Player? = null) = getValue(PlaceholderParameters.EMPTY, scope.defaultContext, player)
 
     @JvmDefault
-    fun getValue(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: Scope<*>.Context = scope.defaultContext, player: Player? = null): String
+    fun getValue(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: AnyContext = scope.defaultContext, player: Player? = null): String
 
     @JvmDefault
     fun getDirectValue(player: Player? = null) = getDirectValue(PlaceholderParameters.EMPTY, player)
@@ -60,10 +61,10 @@ interface Placeholder<T> {
     fun getDirectValue(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, player: Player? = null) = getDirectValue(parameters, scope.defaultContext, player)
 
     @JvmDefault
-    fun getDirectValue(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: Scope<*>.Context = scope.defaultContext, player: Player? = null): T?
+    fun getDirectValue(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: AnyContext = scope.defaultContext, player: Player? = null): T?
 
     @JvmDefault
-    fun forceUpdate(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: Scope<*>.Context = scope.defaultContext, player: Player? = null): String
+    fun forceUpdate(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: AnyContext = scope.defaultContext, player: Player? = null): String
 
     fun addListener(plugin: Plugin, listener: PlaceholderChangeListener<T>)
 
@@ -73,7 +74,7 @@ interface Placeholder<T> {
 
     fun isVisitorSensitive() = false
 
-    fun updateOrExecute(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: Scope<*>.Context = scope.defaultContext, player: Player? = null, action: Runnable)
+    fun updateOrExecute(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: AnyContext = scope.defaultContext, player: Player? = null, action: Runnable)
 
     fun getType(): Type {
         val mySuperclass = this::class.java.genericSuperclass

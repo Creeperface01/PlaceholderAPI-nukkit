@@ -1,12 +1,14 @@
 package com.creeperface.nukkit.placeholderapi.api.scope
 
 import com.creeperface.nukkit.placeholderapi.api.Placeholder
+import com.creeperface.nukkit.placeholderapi.api.util.AnyContext
+import com.creeperface.nukkit.placeholderapi.api.util.AnyScope
 
 abstract class Scope<T> {
 
     open val global = false
 
-    open val parent: Scope<*>? = GlobalScope
+    open val parent: AnyScope? = GlobalScope
 
     val placeholders = mutableMapOf<String, Placeholder<out Any?>>()
 
@@ -17,7 +19,7 @@ abstract class Scope<T> {
 
     inner class Context(val context: T, val scope: Scope<T> = this, parentContext: Context? = null) {
 
-        val parentContext: Scope<*>.Context?
+        val parentContext: AnyContext?
 
         init {
             this.parentContext = when (parentContext) {

@@ -3,10 +3,7 @@ package com.creeperface.nukkit.placeholderapi.api
 import cn.nukkit.Player
 import com.creeperface.nukkit.placeholderapi.PlaceholderAPIIml
 import com.creeperface.nukkit.placeholderapi.api.scope.GlobalScope
-import com.creeperface.nukkit.placeholderapi.api.scope.Scope
-import com.creeperface.nukkit.placeholderapi.api.util.MatchedGroup
-import com.creeperface.nukkit.placeholderapi.api.util.PlaceholderGroup
-import com.creeperface.nukkit.placeholderapi.api.util.matchPlaceholders
+import com.creeperface.nukkit.placeholderapi.api.util.*
 import java.util.*
 import java.util.function.BiFunction
 import java.util.function.Function
@@ -14,9 +11,10 @@ import java.util.function.Function
 /**
  * @author CreeperFace
  */
+@Suppress("DEPRECATION", "UNUSED")
 interface PlaceholderAPI {
 
-    val globalScope: Scope<*>
+    val globalScope: AnyScope
 
     @JvmDefault
     @Deprecated("Use builder instead", ReplaceWith("buildStatic(name, loader)" +
@@ -110,7 +108,7 @@ interface PlaceholderAPI {
             updateInterval: Int = -1,
             autoUpdate: Boolean = false,
             processParameters: Boolean = false,
-            scope: Scope<*> = GlobalScope,
+            scope: AnyScope = GlobalScope,
             vararg aliases: String
     ) where T : Any? = staticPlaceholder(
             name,
@@ -123,11 +121,11 @@ interface PlaceholderAPI {
 
     fun <T> staticPlaceholder(
             name: String,
-            loader: (PlaceholderParameters, Scope<*>.Context) -> T?,
+            loader: (PlaceholderParameters, AnyContext) -> T?,
             updateInterval: Int = -1,
             autoUpdate: Boolean = false,
             processParameters: Boolean = false,
-            scope: Scope<*> = GlobalScope,
+            scope: AnyScope = GlobalScope,
             vararg aliases: String
     ) where T : Any?
 
@@ -221,7 +219,7 @@ interface PlaceholderAPI {
             updateInterval: Int = -1,
             autoUpdate: Boolean = false,
             processParameters: Boolean = false,
-            scope: Scope<*> = GlobalScope,
+            scope: AnyScope = GlobalScope,
             vararg aliases: String
     ) where T : Any? = visitorSensitivePlaceholder(
             name,
@@ -235,11 +233,11 @@ interface PlaceholderAPI {
 
     fun <T> visitorSensitivePlaceholder(
             name: String,
-            loader: (Player, PlaceholderParameters, Scope<*>.Context) -> T?,
+            loader: (Player, PlaceholderParameters, AnyContext) -> T?,
             updateInterval: Int = -1,
             autoUpdate: Boolean = false,
             processParameters: Boolean = false,
-            scope: Scope<*> = GlobalScope,
+            scope: AnyScope = GlobalScope,
             vararg aliases: String
     ) where T : Any?
 
@@ -248,12 +246,12 @@ interface PlaceholderAPI {
     @JvmDefault
     fun getPlaceholder(key: String) = getPlaceholder(key, GlobalScope)
 
-    fun getPlaceholder(key: String, scope: Scope<*> = GlobalScope): Placeholder<out Any?>?
+    fun getPlaceholder(key: String, scope: AnyScope = GlobalScope): Placeholder<out Any?>?
 
     @JvmDefault
     fun getPlaceholders() = getPlaceholders(GlobalScope)
 
-    fun getPlaceholders(scope: Scope<*> = GlobalScope): PlaceholderGroup
+    fun getPlaceholders(scope: AnyScope = GlobalScope): PlaceholderGroup
 
     @JvmDefault
     fun getValue(key: String) = getValue(key, null)
@@ -280,7 +278,7 @@ interface PlaceholderAPI {
             visitor: Player? = null,
             defaultValue: String? = key,
             params: PlaceholderParameters = PlaceholderParameters.EMPTY,
-            context: Scope<*>.Context = GlobalScope.defaultContext
+            context: AnyContext = GlobalScope.defaultContext
     ): String?
 
     @JvmDefault
@@ -299,9 +297,9 @@ interface PlaceholderAPI {
 
     fun translateString(input: String, visitor: Player?, matched: Collection<MatchedGroup>): String
 
-    fun findPlaceholders(input: String, scope: Scope<*> = GlobalScope) = findPlaceholders(input.matchPlaceholders(), scope)
+    fun findPlaceholders(input: String, scope: AnyScope = GlobalScope) = findPlaceholders(input.matchPlaceholders(), scope)
 
-    fun findPlaceholders(matched: Collection<MatchedGroup>, scope: Scope<*> = GlobalScope): List<Placeholder<out Any?>>
+    fun findPlaceholders(matched: Collection<MatchedGroup>, scope: AnyScope = GlobalScope): List<Placeholder<out Any?>>
 
     fun formatTime(millis: Long): String
 
@@ -316,7 +314,7 @@ interface PlaceholderAPI {
             loader
     )
 
-    fun <T> buildStatic(name: String, loader: (PlaceholderParameters, Scope<*>.Context) -> T?) = StaticBuilder(
+    fun <T> buildStatic(name: String, loader: (PlaceholderParameters, AnyContext) -> T?) = StaticBuilder(
             name,
             loader
     )
@@ -326,14 +324,14 @@ interface PlaceholderAPI {
             loader
     )
 
-    fun <T> buildVisitorSensitive(name: String, loader: (Player, PlaceholderParameters, Scope<*>.Context) -> T?) = VisitorBuilder(
+    fun <T> buildVisitorSensitive(name: String, loader: (Player, PlaceholderParameters, AnyContext) -> T?) = VisitorBuilder(
             name,
             loader
     )
 
     class StaticBuilder<T> internal constructor(
             name: String,
-            private val loader: (PlaceholderParameters, scopeContext: Scope<*>.Context) -> T?
+            private val loader: (PlaceholderParameters, scopeContext: AnyContext) -> T?
     ) : Builder<T, StaticBuilder<T>>(name) {
 
         internal constructor(
@@ -356,7 +354,7 @@ interface PlaceholderAPI {
 
     class VisitorBuilder<T> internal constructor(
             name: String,
-            private val loader: (Player, PlaceholderParameters, Scope<*>.Context) -> T?
+            private val loader: (Player, PlaceholderParameters, AnyContext) -> T?
     ) : Builder<T, VisitorBuilder<T>>(name) {
 
         internal constructor(
@@ -389,7 +387,7 @@ interface PlaceholderAPI {
         protected var autoUpdate = false
         protected var aliases = emptyArray<String>()
         protected var processParameters = false
-        protected var scope: Scope<*> = GlobalScope
+        protected var scope: AnyScope = GlobalScope
 
         fun updateInterval(updateInterval: Int): B {
             this.updateInterval = updateInterval
@@ -406,7 +404,7 @@ interface PlaceholderAPI {
             return self
         }
 
-        fun scope(scope: Scope<*>): B {
+        fun scope(scope: AnyScope): B {
             this.scope = scope
             return self
         }

@@ -2,7 +2,8 @@ package com.creeperface.nukkit.placeholderapi.placeholder
 
 import cn.nukkit.Player
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
-import com.creeperface.nukkit.placeholderapi.api.scope.Scope
+import com.creeperface.nukkit.placeholderapi.api.util.AnyContext
+import com.creeperface.nukkit.placeholderapi.api.util.AnyScope
 
 /**
  * @author CreeperFace
@@ -13,8 +14,8 @@ open class StaticPlaceHolder<T : Any?>(
         autoUpdate: Boolean,
         aliases: Set<String>,
         processParameters: Boolean,
-        scope: Scope<*>,
-        private val loader: (PlaceholderParameters, Scope<*>.Context) -> T?
+        scope: AnyScope,
+        private val loader: (PlaceholderParameters, AnyContext) -> T?
 
 ) : BasePlaceholder<T>(
         name,
@@ -25,11 +26,11 @@ open class StaticPlaceHolder<T : Any?>(
         scope
 ) {
 
-    override fun loadValue(parameters: PlaceholderParameters, context: Scope<*>.Context, player: Player?): T? {
+    override fun loadValue(parameters: PlaceholderParameters, context: AnyContext, player: Player?): T? {
         return loader(parameters, context)
     }
 
-    override fun forceUpdate(parameters: PlaceholderParameters, context: Scope<*>.Context, player: Player?): String {
+    override fun forceUpdate(parameters: PlaceholderParameters, context: AnyContext, player: Player?): String {
         checkForUpdate(parameters)
 
         return safeValue()

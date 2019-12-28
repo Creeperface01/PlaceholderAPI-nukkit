@@ -9,7 +9,8 @@ import cn.nukkit.plugin.Plugin
 import com.creeperface.nukkit.placeholderapi.api.Placeholder
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
 import com.creeperface.nukkit.placeholderapi.api.scope.GlobalScope
-import com.creeperface.nukkit.placeholderapi.api.scope.Scope
+import com.creeperface.nukkit.placeholderapi.api.util.AnyContext
+import com.creeperface.nukkit.placeholderapi.api.util.AnyScope
 import com.creeperface.nukkit.placeholderapi.api.util.MatchedGroup
 import com.creeperface.nukkit.placeholderapi.api.util.PlaceholderGroup
 import com.creeperface.nukkit.placeholderapi.command.PlaceholderCommand
@@ -33,7 +34,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
     override val globalScope = GlobalScope
 
     private val globalPlaceholders = mutableMapOf<String, Placeholder<out Any?>>()
-    private val scopePlaceholders = mutableMapOf<Scope<*>, PlaceholderGroup>()
+    private val scopePlaceholders = mutableMapOf<AnyScope, PlaceholderGroup>()
 
     private val updatePlaceholders = mutableMapOf<String, Placeholder<out Any?>>()
 
@@ -75,11 +76,11 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
 
     override fun <T> staticPlaceholder(
             name: String,
-            loader: (PlaceholderParameters, Scope<*>.Context) -> T?,
+            loader: (PlaceholderParameters, AnyContext) -> T?,
             updateInterval: Int,
             autoUpdate: Boolean,
             processParameters: Boolean,
-            scope: Scope<*>,
+            scope: AnyScope,
             vararg aliases: String) where T : Any? {
         registerPlaceholder(
                 StaticPlaceHolder(
@@ -96,11 +97,11 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
 
     override fun <T> visitorSensitivePlaceholder(
             name: String,
-            loader: (Player, PlaceholderParameters, Scope<*>.Context) -> T?,
+            loader: (Player, PlaceholderParameters, AnyContext) -> T?,
             updateInterval: Int,
             autoUpdate: Boolean,
             processParameters: Boolean,
-            scope: Scope<*>,
+            scope: AnyScope,
             vararg aliases: String) where T : Any? {
         registerPlaceholder(
                 VisitorSensitivePlaceholder(
@@ -138,7 +139,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         }
     }
 
-    override fun getValue(key: String, visitor: Player?, defaultValue: String?, params: PlaceholderParameters, context: Scope<*>.Context): String? {
+    override fun getValue(key: String, visitor: Player?, defaultValue: String?, params: PlaceholderParameters, context: AnyContext): String? {
         return getPlaceholder(key)?.getValue(params, context, visitor) ?: key
     }
 
@@ -160,7 +161,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         return builder.toString()
     }
 
-    override fun findPlaceholders(matched: Collection<MatchedGroup>, scope: Scope<*>): List<Placeholder<out Any?>> {
+    override fun findPlaceholders(matched: Collection<MatchedGroup>, scope: AnyScope): List<Placeholder<out Any?>> {
         val result = mutableListOf<Placeholder<out Any?>>()
 
         matched.forEach {
@@ -172,7 +173,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         return result
     }
 
-    override fun getPlaceholder(key: String, scope: Scope<*>): Placeholder<out Any?>? {
+    override fun getPlaceholder(key: String, scope: AnyScope): Placeholder<out Any?>? {
         if (scope.global) {
             return globalPlaceholders[key]
         }
@@ -200,12 +201,12 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         }
     }
 
-    override fun getPlaceholders(scope: Scope<*>): PlaceholderGroup {
+    override fun getPlaceholders(scope: AnyScope): PlaceholderGroup {
         if (scope.global) {
             return globalPlaceholders
         }
 
-        val scopes = mutableListOf<Scope<*>>()
+        val scopes = mutableListOf<AnyScope>()
 
         while (true) {
             scopes.add(scope.parent ?: break)

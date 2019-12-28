@@ -3,18 +3,20 @@ package com.creeperface.nukkit.placeholderapi.placeholder
 import cn.nukkit.Player
 import cn.nukkit.Server
 import cn.nukkit.plugin.Plugin
+import com.creeperface.nukkit.placeholderapi.PlaceholderAPIIml
 import com.creeperface.nukkit.placeholderapi.api.Placeholder
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderChangeListener
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderUpdateEvent
-import com.creeperface.nukkit.placeholderapi.api.scope.Scope
+import com.creeperface.nukkit.placeholderapi.api.util.AnyContext
+import com.creeperface.nukkit.placeholderapi.api.util.AnyScope
 import com.creeperface.nukkit.placeholderapi.util.toFormattedString
 import java.util.*
 
 /**
  * @author CreeperFace
  */
-abstract class BasePlaceholder<T : Any?>(override val name: String, override val updateInterval: Int, override val autoUpdate: Boolean, override val aliases: Set<String>, override val processParameters: Boolean, override val scope: Scope<*>) : Placeholder<T> {
+abstract class BasePlaceholder<T : Any?>(override val name: String, override val updateInterval: Int, override val autoUpdate: Boolean, override val aliases: Set<String>, override val processParameters: Boolean, override val scope: AnyScope) : Placeholder<T> {
 
     protected val changeListeners = mutableMapOf<Plugin, PlaceholderChangeListener<T>>()
 
@@ -22,7 +24,7 @@ abstract class BasePlaceholder<T : Any?>(override val name: String, override val
     var lastUpdate: Long = 0
     val server: Server = Server.getInstance()
 
-    override fun getValue(parameters: PlaceholderParameters, context: Scope<*>.Context, player: Player?): String {
+    override fun getValue(parameters: PlaceholderParameters, context: AnyContext, player: Player?): String {
         if (value == null || readyToUpdate()) {
             checkForUpdate(parameters, player = player, context = context)
         }
@@ -30,13 +32,13 @@ abstract class BasePlaceholder<T : Any?>(override val name: String, override val
         return safeValue()
     }
 
-    override fun getDirectValue(parameters: PlaceholderParameters, context: Scope<*>.Context, player: Player?): T? {
+    override fun getDirectValue(parameters: PlaceholderParameters, context: AnyContext, player: Player?): T? {
         getValue(parameters, context, player)
 
         return value
     }
 
-    override fun updateOrExecute(parameters: PlaceholderParameters, context: Scope<*>.Context, player: Player?, action: Runnable) {
+    override fun updateOrExecute(parameters: PlaceholderParameters, context: AnyContext, player: Player?, action: Runnable) {
         var updated = false
 
         if (value == null || readyToUpdate()) {
@@ -48,12 +50,12 @@ abstract class BasePlaceholder<T : Any?>(override val name: String, override val
         }
     }
 
-    protected abstract fun loadValue(parameters: PlaceholderParameters, context: Scope<*>.Context, player: Player? = null): T?
+    protected abstract fun loadValue(parameters: PlaceholderParameters, context: AnyContext, player: Player? = null): T?
 
     protected fun safeValue() = value?.toFormattedString() ?: name
 
     @JvmOverloads
-    protected fun checkForUpdate(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: Scope<*>.Context = scope.defaultContext, player: Player? = null, force: Boolean = false): Boolean {
+    protected fun checkForUpdate(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: AnyContext = scope.defaultContext, player: Player? = null, force: Boolean = false): Boolean {
         if (!force && !readyToUpdate())
             return false
 
@@ -62,7 +64,7 @@ abstract class BasePlaceholder<T : Any?>(override val name: String, override val
 
     protected open fun checkValueUpdate(value: T?, newVal: T?, player: Player? = null): Boolean {
         if (!Objects.equals(value, newVal)) {
-            Server.getInstance().scheduler.scheduleTask {
+            Server.getInstance().scheduler.scheduleTask(PlaceholderAPIIml.instance) {
                 run {
                     val ev = PlaceholderUpdateEvent(this, value, newVal, player)
                     server.pluginManager.callEvent(ev)
