@@ -17,7 +17,7 @@ abstract class Scope<T> {
 
     open fun hasDefaultContext() = false
 
-    inner class Context(val context: T, parentContext: Context?, val scope: Scope<T> = this) {
+    inner class Context(val context: T, parentContext: Context? = null, val scope: Scope<T> = this) {
 
         val parentContext: AnyContext?
 
