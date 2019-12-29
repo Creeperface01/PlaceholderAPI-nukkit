@@ -4,7 +4,7 @@ import com.creeperface.nukkit.placeholderapi.api.util.AnyContext
 import com.creeperface.nukkit.placeholderapi.api.util.AnyPlaceholder
 import com.creeperface.nukkit.placeholderapi.api.util.AnyScope
 
-abstract class Scope<T> {
+abstract class Scope<T, S : Scope<T, S>> {
 
     open val global = false
 
@@ -17,7 +17,7 @@ abstract class Scope<T> {
 
     open fun hasDefaultContext() = false
 
-    inner class Context(val context: T, parentContext: Context? = null, val scope: Scope<T> = this) {
+    open inner class Context(val context: T, val scope: S, parentContext: AnyContext? = null) {
 
         val parentContext: AnyContext?
 

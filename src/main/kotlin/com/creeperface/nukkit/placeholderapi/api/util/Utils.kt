@@ -9,9 +9,9 @@ import java.util.regex.Pattern
  * @author CreeperFace
  */
 
-typealias AnyScope = Scope<out Any?>
+typealias AnyScope = Scope<out Any?, *>
 
-typealias AnyContext = Scope<out Any?>.Context
+typealias AnyContext = Scope<out Any?, *>.Context
 typealias AnyPlaceholder = Placeholder<out Any?>
 
 typealias PlaceholderGroup = MutableMap<String, AnyPlaceholder>
