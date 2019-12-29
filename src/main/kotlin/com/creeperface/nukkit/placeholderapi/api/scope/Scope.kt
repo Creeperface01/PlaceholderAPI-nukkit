@@ -1,7 +1,7 @@
 package com.creeperface.nukkit.placeholderapi.api.scope
 
-import com.creeperface.nukkit.placeholderapi.api.Placeholder
 import com.creeperface.nukkit.placeholderapi.api.util.AnyContext
+import com.creeperface.nukkit.placeholderapi.api.util.AnyPlaceholder
 import com.creeperface.nukkit.placeholderapi.api.util.AnyScope
 
 abstract class Scope<T> {
@@ -10,14 +10,14 @@ abstract class Scope<T> {
 
     open val parent: AnyScope? = GlobalScope
 
-    val placeholders = mutableMapOf<String, Placeholder<out Any?>>()
+    val placeholders = mutableMapOf<String, AnyPlaceholder>()
 
     open val defaultContext: Context
         get() = throw UnsupportedOperationException("Scope ${this::class.java.name} doesn't have default scope")
 
     open fun hasDefaultContext() = false
 
-    inner class Context(val context: T, val scope: Scope<T> = this, parentContext: Context? = null) {
+    inner class Context(val context: T, parentContext: Context?, val scope: Scope<T> = this) {
 
         val parentContext: AnyContext?
 

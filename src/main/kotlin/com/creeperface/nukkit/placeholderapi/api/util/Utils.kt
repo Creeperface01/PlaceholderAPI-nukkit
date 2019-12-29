@@ -9,10 +9,12 @@ import java.util.regex.Pattern
  * @author CreeperFace
  */
 
-typealias PlaceholderGroup = MutableMap<String, Placeholder<out Any?>>
-
 typealias AnyScope = Scope<out Any?>
+
 typealias AnyContext = Scope<out Any?>.Context
+typealias AnyPlaceholder = Placeholder<out Any?>
+
+typealias PlaceholderGroup = MutableMap<String, AnyPlaceholder>
 
 private val pattern = Pattern.compile("%((?<ph>\\w+)(<(?<params>.+)>)?)%")
 

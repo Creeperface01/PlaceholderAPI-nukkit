@@ -6,13 +6,9 @@ import cn.nukkit.Player
 import cn.nukkit.Server
 import cn.nukkit.entity.Entity
 import cn.nukkit.plugin.Plugin
-import com.creeperface.nukkit.placeholderapi.api.Placeholder
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
 import com.creeperface.nukkit.placeholderapi.api.scope.GlobalScope
-import com.creeperface.nukkit.placeholderapi.api.util.AnyContext
-import com.creeperface.nukkit.placeholderapi.api.util.AnyScope
-import com.creeperface.nukkit.placeholderapi.api.util.MatchedGroup
-import com.creeperface.nukkit.placeholderapi.api.util.PlaceholderGroup
+import com.creeperface.nukkit.placeholderapi.api.util.*
 import com.creeperface.nukkit.placeholderapi.command.PlaceholderCommand
 import com.creeperface.nukkit.placeholderapi.placeholder.StaticPlaceHolder
 import com.creeperface.nukkit.placeholderapi.placeholder.VisitorSensitivePlaceholder
@@ -24,6 +20,7 @@ import com.google.common.base.Preconditions
 import java.util.*
 import java.util.function.BiFunction
 import java.util.function.Function
+import kotlin.jvm.internal.Ref
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderAPI as API
 
 /**
@@ -33,10 +30,10 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
 
     override val globalScope = GlobalScope
 
-    private val globalPlaceholders = mutableMapOf<String, Placeholder<out Any?>>()
+    private val globalPlaceholders = mutableMapOf<String, AnyPlaceholder>()
     private val scopePlaceholders = mutableMapOf<AnyScope, PlaceholderGroup>()
 
-    private val updatePlaceholders = mutableMapOf<String, Placeholder<out Any?>>()
+    private val updatePlaceholders = mutableMapOf<String, AnyPlaceholder>()
 
     val configuration: Configuration
 
@@ -116,7 +113,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         )
     }
 
-    override fun registerPlaceholder(placeholder: Placeholder<out Any?>) {
+    override fun registerPlaceholder(placeholder: AnyPlaceholder) {
         val group = this.scopePlaceholders.computeIfAbsent(placeholder.scope) { mutableMapOf() }
         val existing = group.putIfAbsent(placeholder.name, placeholder)
 
@@ -140,17 +137,23 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
     }
 
     override fun getValue(key: String, visitor: Player?, defaultValue: String?, params: PlaceholderParameters, context: AnyContext): String? {
-        return getPlaceholder(key)?.getValue(params, context, visitor) ?: key
+        val ref = Ref.ObjectRef<AnyContext>()
+
+        getPlaceholder(key, context, ref)?.let {
+            return it.getValue(params, ref.element, visitor)
+        }
+
+        return key
     }
 
 
-    override fun translateString(input: String, visitor: Player?, matched: Collection<MatchedGroup>): String {
+    override fun translateString(input: String, visitor: Player?, context: AnyContext, matched: Collection<MatchedGroup>): String {
         val builder = StringBuilder(input)
 
         var lengthDiff = 0
 
         matched.forEach { group ->
-            val replacement = getValue(group.value, visitor, null, group.params)
+            val replacement = getValue(group.value, visitor, null, group.params, context)
 
             replacement?.run {
                 builder.replace(lengthDiff + group.start, lengthDiff + group.end, replacement)
@@ -161,8 +164,8 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         return builder.toString()
     }
 
-    override fun findPlaceholders(matched: Collection<MatchedGroup>, scope: AnyScope): List<Placeholder<out Any?>> {
-        val result = mutableListOf<Placeholder<out Any?>>()
+    override fun findPlaceholders(matched: Collection<MatchedGroup>, scope: AnyScope): List<AnyPlaceholder> {
+        val result = mutableListOf<AnyPlaceholder>()
 
         matched.forEach {
             getPlaceholder(it.value, scope)?.let { found ->
@@ -173,7 +176,27 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         return result
     }
 
-    override fun getPlaceholder(key: String, scope: AnyScope): Placeholder<out Any?>? {
+    private fun getPlaceholder(key: String, context: AnyContext, placeholderContext: Ref.ObjectRef<AnyContext>): AnyPlaceholder? {
+        if (context.scope.global) {
+            placeholderContext.element = GlobalScope.defaultContext
+            return globalPlaceholders[key]
+        }
+
+        var current = context
+
+        while (true) {
+            scopePlaceholders[current.scope]?.get(key)?.let {
+                placeholderContext.element = current
+                return it
+            }
+
+            current = current.parentContext ?: break
+        }
+
+        return null
+    }
+
+    override fun getPlaceholder(key: String, scope: AnyScope): AnyPlaceholder? {
         if (scope.global) {
             return globalPlaceholders[key]
         }
@@ -191,8 +214,8 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         return null
     }
 
-    override fun updatePlaceholder(key: String, visitor: Player?) {
-        getPlaceholder(key)?.forceUpdate(player = visitor)
+    override fun updatePlaceholder(key: String, visitor: Player?, context: AnyContext) {
+        getPlaceholder(key)?.forceUpdate(player = visitor, context = context)
     }
 
     private fun updatePlaceholders() {
@@ -212,7 +235,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
             scopes.add(scope.parent ?: break)
         }
 
-        val placeholders = mutableMapOf<String, Placeholder<out Any?>>()
+        val placeholders = mutableMapOf<String, AnyPlaceholder>()
         scopes.reversed().forEach {
             scopePlaceholders[it]?.let { group ->
                 placeholders.putAll(group)

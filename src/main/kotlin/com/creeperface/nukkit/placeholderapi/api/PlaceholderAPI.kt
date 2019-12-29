@@ -241,12 +241,12 @@ interface PlaceholderAPI {
             vararg aliases: String
     ) where T : Any?
 
-    fun registerPlaceholder(placeholder: Placeholder<out Any?>)
+    fun registerPlaceholder(placeholder: AnyPlaceholder)
 
     @JvmDefault
     fun getPlaceholder(key: String) = getPlaceholder(key, GlobalScope)
 
-    fun getPlaceholder(key: String, scope: AnyScope = GlobalScope): Placeholder<out Any?>?
+    fun getPlaceholder(key: String, scope: AnyScope = GlobalScope): AnyPlaceholder?
 
     @JvmDefault
     fun getPlaceholders() = getPlaceholders(GlobalScope)
@@ -284,7 +284,9 @@ interface PlaceholderAPI {
     @JvmDefault
     fun updatePlaceholder(key: String) = updatePlaceholder(key, null)
 
-    fun updatePlaceholder(key: String, visitor: Player?)
+    fun updatePlaceholder(key: String, visitor: Player?) = updatePlaceholder(key, visitor, GlobalScope.defaultContext)
+
+    fun updatePlaceholder(key: String, visitor: Player?, context: AnyContext)
 
     @JvmDefault
     fun translateString(input: String) = translateString(input, null)
@@ -293,13 +295,20 @@ interface PlaceholderAPI {
     fun translateString(
             input: String,
             visitor: Player? = null
-    ) = translateString(input, visitor, input.matchPlaceholders())
+    ) = translateString(input, visitor, GlobalScope.defaultContext, input.matchPlaceholders())
 
-    fun translateString(input: String, visitor: Player?, matched: Collection<MatchedGroup>): String
+    @JvmDefault
+    fun translateString(
+            input: String,
+            visitor: Player? = null,
+            context: AnyContext = GlobalScope.defaultContext
+    ) = translateString(input, visitor, context, input.matchPlaceholders())
+
+    fun translateString(input: String, visitor: Player?, context: AnyContext, matched: Collection<MatchedGroup>): String
 
     fun findPlaceholders(input: String, scope: AnyScope = GlobalScope) = findPlaceholders(input.matchPlaceholders(), scope)
 
-    fun findPlaceholders(matched: Collection<MatchedGroup>, scope: AnyScope = GlobalScope): List<Placeholder<out Any?>>
+    fun findPlaceholders(matched: Collection<MatchedGroup>, scope: AnyScope = GlobalScope): List<AnyPlaceholder>
 
     fun formatTime(millis: Long): String
 
