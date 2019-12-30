@@ -5,6 +5,7 @@ import cn.nukkit.plugin.Plugin
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderChangeListener
 import com.creeperface.nukkit.placeholderapi.api.util.AnyContext
 import com.creeperface.nukkit.placeholderapi.api.util.AnyScope
+import com.creeperface.nukkit.placeholderapi.api.util.Formatter
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
@@ -44,6 +45,11 @@ interface Placeholder<T> {
      * A scope where this placeholder can be applied
      */
     val scope: AnyScope
+
+    /**
+     * A Formatter instance for properly formatted output
+     */
+    val formatter: Formatter
 
     @JvmDefault
     fun getValue() = getValue(PlaceholderParameters.EMPTY, scope.defaultContext, null)

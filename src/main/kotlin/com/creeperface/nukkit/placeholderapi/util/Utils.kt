@@ -6,6 +6,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.reflect.KClass
+import kotlin.reflect.full.superclasses
 
 /**
  * @author CreeperFace
@@ -49,4 +51,26 @@ fun Any.toFormattedString(): String = when (this) {
     is Boolean -> toFormatString()
     is Date -> toFormatString()
     else -> toString()
+}
+
+fun KClass<*>.nestedSuperClass(clazz: KClass<*>, level: Int = 0): Int {
+    if (this == clazz) {
+        return level
+    }
+
+    if (this.superclasses.isEmpty()) {
+        return -1
+    }
+
+    var minLevel = Int.MAX_VALUE
+
+    this.superclasses.forEach { superClass ->
+        val superLevel = superClass.nestedSuperClass(clazz, level + 1)
+
+        if (superLevel in 0 until minLevel) {
+            minLevel = superLevel
+        }
+    }
+
+    return minLevel
 }

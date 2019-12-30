@@ -12,21 +12,18 @@ import com.creeperface.nukkit.placeholderapi.api.util.*
 import com.creeperface.nukkit.placeholderapi.command.PlaceholderCommand
 import com.creeperface.nukkit.placeholderapi.placeholder.StaticPlaceHolder
 import com.creeperface.nukkit.placeholderapi.placeholder.VisitorSensitivePlaceholder
-import com.creeperface.nukkit.placeholderapi.util.bytes2MB
-import com.creeperface.nukkit.placeholderapi.util.formatAsTime
-import com.creeperface.nukkit.placeholderapi.util.round
-import com.creeperface.nukkit.placeholderapi.util.toFormatString
+import com.creeperface.nukkit.placeholderapi.util.*
 import com.google.common.base.Preconditions
 import java.util.*
-import java.util.function.BiFunction
-import java.util.function.Function
 import kotlin.jvm.internal.Ref
+import kotlin.reflect.KClass
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderAPI as API
 
 /**
  * @author CreeperFace
  */
-class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Plugin by plugin {
+@Suppress("DEPRECATION")
+class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), Plugin by plugin {
 
     override val globalScope = GlobalScope
 
@@ -34,6 +31,8 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
     private val scopePlaceholders = mutableMapOf<AnyScope, PlaceholderGroup>()
 
     private val updatePlaceholders = mutableMapOf<String, AnyPlaceholder>()
+
+    private val formatters = mutableMapOf<KClass<*>, Formatter>()
 
     val configuration: Configuration
 
@@ -61,6 +60,9 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         saveDefaultConfig()
         configuration = Configuration(this)
         configuration.load()
+
+        registerFormatter(Boolean::class) { formatBoolean(it) }
+        registerFormatter(Date::class) { formatDate(it) }
     }
 
     internal fun init() {
@@ -71,14 +73,15 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
         this.server.commandMap.register("placeholder", PlaceholderCommand())
     }
 
-    override fun <T> staticPlaceholder(
+    override fun <T : Any?> staticPlaceholder(
             name: String,
+            typeClass: KClass<*>,
             loader: (PlaceholderParameters, AnyContext) -> T?,
             updateInterval: Int,
             autoUpdate: Boolean,
             processParameters: Boolean,
             scope: AnyScope,
-            vararg aliases: String) where T : Any? {
+            vararg aliases: String) {
         registerPlaceholder(
                 StaticPlaceHolder(
                         name,
@@ -87,19 +90,21 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
                         aliases.toSet(),
                         processParameters,
                         scope,
+                        getFormatter(typeClass),
                         loader
                 )
         )
     }
 
-    override fun <T> visitorSensitivePlaceholder(
+    override fun <T : Any?> visitorSensitivePlaceholder(
             name: String,
+            typeClass: KClass<*>,
             loader: (Player, PlaceholderParameters, AnyContext) -> T?,
             updateInterval: Int,
             autoUpdate: Boolean,
             processParameters: Boolean,
             scope: AnyScope,
-            vararg aliases: String) where T : Any? {
+            vararg aliases: String) {
         registerPlaceholder(
                 VisitorSensitivePlaceholder(
                         name,
@@ -108,6 +113,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
                         aliases.toSet(),
                         processParameters,
                         scope,
+                        getFormatter(typeClass),
                         loader
                 )
         )
@@ -251,45 +257,84 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API, Pl
 
     override fun formatBoolean(value: Boolean) = value.toFormatString()
 
+    override fun formatObject(value: Any?): String {
+        if (value == null) {
+            return "null"
+        }
+
+        return getFormatter(value::class)(value)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : Any> registerFormatter(clazz: KClass<T>, formatFun: (T) -> String) {
+        formatters[clazz] = format@{
+            it?.let {
+                formatFun(it as T)
+            }
+
+            return@format "null"
+        }
+    }
+
+    override fun getFormatter(clazz: KClass<*>): Formatter {
+        var formatter: Formatter? = null
+        var currentLevel = Int.MAX_VALUE
+
+        formatters.forEach { (formClazz, form) ->
+            if (formClazz == clazz) {
+                return form
+            }
+
+            val level = clazz.nestedSuperClass(formClazz)
+
+            if (level in 0 until currentLevel) {
+                currentLevel = level
+                formatter = form
+            }
+        }
+
+        return formatter ?: { it.toString() }
+    }
+
     private fun registerDefaultPlaceholders() {
-        buildVisitorSensitive<String>("player", BiFunction { p, _ -> p.name }).aliases("playername").build()
-        buildVisitorSensitive<String>("player_displayname", BiFunction { p, _ -> p.displayName }).aliases().build()
-        buildVisitorSensitive<UUID>("player_uuid", BiFunction { p, _ -> p.uniqueId }).aliases().build()
-        buildVisitorSensitive<Int>("player_ping", BiFunction { p, _ -> p.ping }).aliases().build()
-        buildVisitorSensitive<String>("player_level", BiFunction { p, _ -> p.level?.name }).aliases().build()
-        buildVisitorSensitive<Boolean>("player_can_fly", BiFunction { p, _ -> p.adventureSettings?.get(AdventureSettings.Type.ALLOW_FLIGHT) }).aliases().build()
-        buildVisitorSensitive<Boolean>("player_flying", BiFunction { p, _ -> p.adventureSettings?.get(AdventureSettings.Type.FLYING) }).aliases().build()
-        buildVisitorSensitive<Float>("player_health", BiFunction { p, _ -> p.health }).aliases().build()
-        buildVisitorSensitive<Int>("player_max_health", BiFunction { p, _ -> p.maxHealth }).aliases().build()
-        buildVisitorSensitive<Float>("player_saturation", BiFunction { p, _ -> p.foodData.foodSaturationLevel }).aliases().build()
-        buildVisitorSensitive<Int>("player_food", BiFunction { p, _ -> p.foodData.level }).aliases().build()
-        buildVisitorSensitive<String>("player_gamemode", BiFunction { p, _ -> Server.getGamemodeString(p.gamemode, true) }).aliases().build()
-        buildVisitorSensitive<Double>("player_x", BiFunction { p, _ -> p.x.round(configuration.coordsAccuracy) }).updateInterval(0).build()
-        buildVisitorSensitive<Double>("player_y", BiFunction { p, _ -> p.y.round(configuration.coordsAccuracy) }).updateInterval(0).build()
-        buildVisitorSensitive<Double>("player_z", BiFunction { p, _ -> p.z.round(configuration.coordsAccuracy) }).updateInterval(0).build()
-        buildVisitorSensitive<String>("player_direction", BiFunction { p, _ -> p.direction.getName() }).updateInterval(10).build()
-        buildVisitorSensitive<Int>("player_exp", BiFunction { p, _ -> p.experience }).aliases("player_exp_total").build()
-        buildVisitorSensitive<Int>("player_exp_to_next", BiFunction { p, _ -> Player.calculateRequireExperience(p.experienceLevel + 1) }).aliases().build()
-        buildVisitorSensitive<Int>("player_exp_level", BiFunction { p, _ -> p.experienceLevel }).aliases().build()
-        buildVisitorSensitive<Float>("player_speed", BiFunction { p, _ -> p.movementSpeed }).aliases().build()
-        buildVisitorSensitive<Int>("player_max_air", BiFunction { p, _ -> p.getDataPropertyInt(Entity.DATA_MAX_AIR) }).updateInterval(100).build()
-        buildVisitorSensitive<Int>("player_remaining_air", BiFunction { p, _ -> p.getDataPropertyInt(Entity.DATA_AIR) }).updateInterval(10).build()
-        buildVisitorSensitive<String?>("player_item_in_hand", BiFunction { p, _ -> p.inventory?.itemInHand?.name }).updateInterval(10).build()
+        buildVisitorSensitive("player") { p, _ -> p.name }.aliases("playername").build()
+        buildVisitorSensitive("player_displayname") { p, _ -> p.displayName }.aliases().build()
+        buildVisitorSensitive("player_uuid") { p, _ -> p.uniqueId }.aliases().build()
+        buildVisitorSensitive("player_ping") { p, _ -> p.ping }.aliases().build()
+        buildVisitorSensitive("player_level") { p, _ -> p.level?.name }.aliases().build()
+        buildVisitorSensitive("player_can_fly") { p, _ -> p.adventureSettings?.get(AdventureSettings.Type.ALLOW_FLIGHT) }.aliases().build()
+        buildVisitorSensitive("player_flying") { p, _ -> p.adventureSettings?.get(AdventureSettings.Type.FLYING) }.aliases().build()
+        buildVisitorSensitive("player_health") { p, _ -> p.health }.aliases().build()
+        buildVisitorSensitive("player_max_health") { p, _ -> p.maxHealth }.aliases().build()
+        buildVisitorSensitive("player_saturation") { p, _ -> p.foodData.foodSaturationLevel }.aliases().build()
+        buildVisitorSensitive("player_food") { p, _ -> p.foodData.level }.aliases().build()
+        buildVisitorSensitive("player_gamemode") { p, _ -> Server.getGamemodeString(p.gamemode, true) }.aliases().build()
+        buildVisitorSensitive("player_x") { p, _ -> p.x.round(configuration.coordsAccuracy) }.updateInterval(0).build()
+        buildVisitorSensitive("player_y") { p, _ -> p.y.round(configuration.coordsAccuracy) }.updateInterval(0).build()
+        buildVisitorSensitive("player_z") { p, _ -> p.z.round(configuration.coordsAccuracy) }.updateInterval(0).build()
+        buildVisitorSensitive("player_direction") { p, _ -> p.direction.getName() }.updateInterval(10).build()
+        buildVisitorSensitive("player_exp") { p, _ -> p.experience }.aliases("player_exp_total").build()
+        buildVisitorSensitive("player_exp_to_next") { p, _ -> Player.calculateRequireExperience(p.experienceLevel + 1) }.aliases().build()
+        buildVisitorSensitive("player_exp_level") { p, _ -> p.experienceLevel }.aliases().build()
+        buildVisitorSensitive("player_speed") { p, _ -> p.movementSpeed }.aliases().build()
+        buildVisitorSensitive("player_max_air") { p, _ -> p.getDataPropertyInt(Entity.DATA_MAX_AIR) }.updateInterval(100).build()
+        buildVisitorSensitive("player_remaining_air") { p, _ -> p.getDataPropertyInt(Entity.DATA_AIR) }.updateInterval(10).build()
+        buildVisitorSensitive("player_item_in_hand") { p, _ -> p.inventory?.itemInHand?.name }.updateInterval(10).build()
 
         val server = this.server
         val runtime = Runtime.getRuntime()
 
-        buildStatic<Int>("server_online", Function { server.onlinePlayers.size }).aliases().build()
-        buildStatic<Int>("server_max_players", Function { server.maxPlayers }).aliases().build()
-        buildStatic<String>("server_motd", Function { server.network.name }).aliases().build()
-        buildStatic<Double>("server_ram_used", Function { (runtime.totalMemory() - runtime.freeMemory()).bytes2MB().round(configuration.coordsAccuracy) }).aliases().build()
-        buildStatic<Double>("server_ram_free", Function { runtime.freeMemory().bytes2MB().round(configuration.coordsAccuracy) }).aliases().build()
-        buildStatic<Double>("server_ram_total", Function { runtime.totalMemory().bytes2MB().round(configuration.coordsAccuracy) }).aliases().build()
-        buildStatic<Double>("server_ram_max", Function { runtime.maxMemory().bytes2MB().round(configuration.coordsAccuracy) }).aliases().build()
-        buildStatic<Int>("server_cores", Function { runtime.availableProcessors() }).aliases().build()
-        buildStatic<Float>("server_tps", Function { server.ticksPerSecondAverage }).aliases().build()
-        buildStatic<String>("server_uptime", Function { (System.currentTimeMillis() - Nukkit.START_TIME).formatAsTime(configuration.timeFormat) }).aliases().build()
+        buildStatic("server_online") { _ -> server.onlinePlayers.size }.aliases().build()
+        buildStatic("server_max_players") { _ -> server.maxPlayers }.aliases().build()
+        buildStatic("server_motd") { _ -> server.network.name }.aliases().build()
+        buildStatic("server_ram_used") { _ -> (runtime.totalMemory() - runtime.freeMemory()).bytes2MB().round(configuration.coordsAccuracy) }.aliases().build()
+        buildStatic("server_ram_free") { _ -> runtime.freeMemory().bytes2MB().round(configuration.coordsAccuracy) }.aliases().build()
+        buildStatic("server_ram_total") { _ -> runtime.totalMemory().bytes2MB().round(configuration.coordsAccuracy) }.aliases().build()
+        buildStatic("server_ram_max") { _ -> runtime.maxMemory().bytes2MB().round(configuration.coordsAccuracy) }.aliases().build()
+        buildStatic("server_cores") { _ -> runtime.availableProcessors() }.aliases().build()
+        buildStatic("server_tps") { _ -> server.ticksPerSecondAverage }.aliases().build()
+        buildStatic("server_uptime") { _ -> (System.currentTimeMillis() - Nukkit.START_TIME).formatAsTime(configuration.timeFormat) }.aliases().build()
 
-        buildStatic<String>("time", Function { formatTime(System.currentTimeMillis()) }).updateInterval(10).build()
+        buildStatic("time") { _ -> formatTime(System.currentTimeMillis()) }.updateInterval(10).build()
     }
 }

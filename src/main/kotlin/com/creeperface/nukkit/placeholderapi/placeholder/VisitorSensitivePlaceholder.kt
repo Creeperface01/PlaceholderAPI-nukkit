@@ -4,6 +4,7 @@ import cn.nukkit.Player
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
 import com.creeperface.nukkit.placeholderapi.api.util.AnyContext
 import com.creeperface.nukkit.placeholderapi.api.util.AnyScope
+import com.creeperface.nukkit.placeholderapi.api.util.Formatter
 import java.util.*
 
 /**
@@ -16,6 +17,7 @@ open class VisitorSensitivePlaceholder<T : Any?>(
         aliases: Set<String>,
         processParameters: Boolean,
         scope: AnyScope,
+        formatter: Formatter,
         private val loader: (Player, PlaceholderParameters, AnyContext) -> T?
 
 ) : BasePlaceholder<T>(
@@ -24,7 +26,8 @@ open class VisitorSensitivePlaceholder<T : Any?>(
         autoUpdate,
         aliases,
         processParameters,
-        scope
+        scope,
+        formatter
 ) {
 
     private val cache = WeakHashMap<Player, Entry<T>>()

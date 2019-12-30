@@ -8,259 +8,52 @@ import com.creeperface.nukkit.placeholderapi.api.util.*
 import java.util.*
 import java.util.function.BiFunction
 import java.util.function.Function
+import kotlin.reflect.KClass
 
 /**
  * @author CreeperFace
  */
 @Suppress("DEPRECATION", "UNUSED", "UNCHECKED_CAST")
-interface PlaceholderAPI {
+abstract class PlaceholderAPI {
 
-    val globalScope: AnyScope
+    abstract val globalScope: AnyScope
 
-    @JvmDefault
-    @Deprecated("Use builder instead", ReplaceWith("buildStatic(name, loader)" +
-            ".aliases(*aliases)" +
-            ".build()"
-    ))
-    fun <T> staticPlaceholder(
+    abstract fun <T : Any?> staticPlaceholder(
             name: String,
-            loader: Function<PlaceholderParameters, T?>,
-            vararg aliases: String
-    ) where T : Any? = staticPlaceholder(
-            name,
-            loader,
-            20,
-            false,
-            *aliases
-    )
-
-    @JvmDefault
-    @Deprecated("Use builder instead", ReplaceWith("buildStatic(name, loader)" +
-            ".updateInterval(updateInterval)" +
-            ".build()"
-    ))
-    fun <T> staticPlaceholder(
-            name: String,
-            loader: Function<PlaceholderParameters, T?>,
-            updateInterval: Int
-    ) where T : Any? = staticPlaceholder(
-            name,
-            loader,
-            updateInterval,
-            false
-    )
-
-    @Deprecated("Use builder instead", ReplaceWith("buildStatic(name, loader)" +
-            ".updateInterval(updateInterval)" +
-            ".autoUpdate(autoUpdate)" +
-            ".aliases(*aliases)" +
-            ".build()"
-    ))
-    fun <T> staticPlaceholder(
-            name: String,
-            loader: Function<PlaceholderParameters, T?>,
-            updateInterval: Int = -1,
-            autoUpdate: Boolean = false,
-            vararg aliases: String
-    ) where T : Any? = staticPlaceholder(
-            name,
-            loader,
-            updateInterval,
-            autoUpdate = false,
-            processParameters = false,
-            aliases = *aliases
-    )
-
-    @Deprecated("Use builder instead", ReplaceWith("buildStatic(name, loader)" +
-            ".updateInterval(updateInterval)" +
-            ".autoUpdate(autoUpdate)" +
-            ".processParameters(processParameters)" +
-            ".aliases(*aliases)" +
-            ".build()"
-    ))
-    fun <T> staticPlaceholder(
-            name: String,
-            loader: Function<PlaceholderParameters, T?>,
-            updateInterval: Int = -1,
-            autoUpdate: Boolean = false,
-            processParameters: Boolean = false,
-            vararg aliases: String
-    ) where T : Any? = staticPlaceholder(
-            name,
-            loader,
-            updateInterval,
-            autoUpdate,
-            processParameters,
-            GlobalScope,
-            *aliases
-    )
-
-    @Deprecated("Use builder instead", ReplaceWith("buildStatic(name, loader)" +
-            ".updateInterval(updateInterval)" +
-            ".autoUpdate(autoUpdate)" +
-            ".processParameters(processParameters)" +
-            ".scope(scope)" +
-            ".aliases(*aliases)" +
-            ".build()"
-    ))
-    fun <T> staticPlaceholder(
-            name: String,
-            loader: Function<PlaceholderParameters, T?>,
-            updateInterval: Int = -1,
-            autoUpdate: Boolean = false,
-            processParameters: Boolean = false,
-            scope: AnyScope = GlobalScope,
-            vararg aliases: String
-    ) where T : Any? = staticPlaceholder(
-            name,
-            { params, _ -> loader.apply(params) },
-            updateInterval,
-            autoUpdate, processParameters,
-            scope,
-            *aliases
-    )
-
-    fun <T> staticPlaceholder(
-            name: String,
+            typeClass: KClass<*>,
             loader: (PlaceholderParameters, AnyContext) -> T?,
             updateInterval: Int = -1,
             autoUpdate: Boolean = false,
             processParameters: Boolean = false,
             scope: AnyScope = GlobalScope,
             vararg aliases: String
-    ) where T : Any?
-
-    @JvmDefault
-    @Deprecated("Use builder instead", ReplaceWith("buildVisitorSensitive(name, loader)" +
-            ".aliases(*aliases)" +
-            ".build()"
-    ))
-    fun <T> visitorSensitivePlaceholder(
-            name: String,
-            loader: BiFunction<Player, PlaceholderParameters, T?>,
-            vararg aliases: String
-    ) where T : Any? = visitorSensitivePlaceholder(
-            name,
-            loader,
-            20,
-            false,
-            *aliases
     )
 
-    @Deprecated("Use builder instead", ReplaceWith("buildVisitorSensitive(name, loader)" +
-            ".updateInterval(updateInterval)" +
-            ".build()"
-    ))
-    fun <T> visitorSensitivePlaceholder(
+    abstract fun <T : Any?> visitorSensitivePlaceholder(
             name: String,
-            loader: BiFunction<Player, PlaceholderParameters, T?>,
-            updateInterval: Int
-    ) where T : Any? = visitorSensitivePlaceholder(
-            name,
-            loader,
-            updateInterval,
-            false
-    )
-
-    @Deprecated("Use builder instead", ReplaceWith("buildVisitorSensitive(name, loader)" +
-            ".updateInterval(updateInterval)" +
-            ".autoUpdate(autoUpdate)" +
-            ".aliases(*aliases)" +
-            ".build()"
-    ))
-    fun <T> visitorSensitivePlaceholder(
-            name: String,
-            loader: BiFunction<Player, PlaceholderParameters, T?>,
-            updateInterval: Int = -1,
-            autoUpdate: Boolean = false,
-            vararg aliases: String
-    ) where T : Any? = visitorSensitivePlaceholder(
-            name,
-            loader,
-            updateInterval,
-            autoUpdate = false,
-            processParameters = false
-    )
-
-    @Deprecated("Use builder instead", ReplaceWith("buildVisitorSensitive(name, loader)" +
-            ".updateInterval(updateInterval)" +
-            ".autoUpdate(autoUpdate)" +
-            ".processParameters(processParameters)" +
-            ".aliases(*aliases)" +
-            ".build()"
-    ))
-    fun <T> visitorSensitivePlaceholder(
-            name: String,
-            loader: BiFunction<Player, PlaceholderParameters, T?>,
-            updateInterval: Int = -1,
-            autoUpdate: Boolean = false,
-            processParameters: Boolean = false,
-            vararg aliases: String
-    ) where T : Any? = visitorSensitivePlaceholder(
-            name,
-            loader,
-            updateInterval,
-            autoUpdate,
-            processParameters,
-            GlobalScope,
-            *aliases
-    )
-
-    @Deprecated("Use builder instead", ReplaceWith("buildVisitorSensitive(name, loader)" +
-            ".updateInterval(updateInterval)" +
-            ".autoUpdate(autoUpdate)" +
-            ".processParameters(processParameters)" +
-            ".scope(scope)" +
-            ".aliases(*aliases)" +
-            ".build()"
-    ))
-    fun <T> visitorSensitivePlaceholder(
-            name: String,
-            loader: BiFunction<Player, PlaceholderParameters, T?>,
-            updateInterval: Int = -1,
-            autoUpdate: Boolean = false,
-            processParameters: Boolean = false,
-            scope: AnyScope = GlobalScope,
-            vararg aliases: String
-    ) where T : Any? = visitorSensitivePlaceholder(
-            name,
-            { player, placeholderParameters, _ -> loader.apply(player, placeholderParameters) },
-            updateInterval,
-            autoUpdate,
-            processParameters,
-            scope,
-            *aliases
-    )
-
-    fun <T> visitorSensitivePlaceholder(
-            name: String,
+            typeClass: KClass<*>,
             loader: (Player, PlaceholderParameters, AnyContext) -> T?,
             updateInterval: Int = -1,
             autoUpdate: Boolean = false,
             processParameters: Boolean = false,
             scope: AnyScope = GlobalScope,
             vararg aliases: String
-    ) where T : Any?
+    )
 
-    fun registerPlaceholder(placeholder: AnyPlaceholder)
+    abstract fun registerPlaceholder(placeholder: AnyPlaceholder)
 
-    @JvmDefault
     fun getPlaceholder(key: String) = getPlaceholder(key, GlobalScope)
 
-    fun getPlaceholder(key: String, scope: AnyScope = GlobalScope): AnyPlaceholder?
+    abstract fun getPlaceholder(key: String, scope: AnyScope = GlobalScope): AnyPlaceholder?
 
-    @JvmDefault
     fun getPlaceholders() = getPlaceholders(GlobalScope)
 
-    fun getPlaceholders(scope: AnyScope = GlobalScope): PlaceholderGroup
+    abstract fun getPlaceholders(scope: AnyScope = GlobalScope): PlaceholderGroup
 
-    @JvmDefault
     fun getValue(key: String) = getValue(key, null)
 
-    @JvmDefault
     fun getValue(key: String, visitor: Player?) = getValue(key, visitor, key)
 
-    @JvmDefault
     fun getValue(
             key: String,
             visitor: Player? = null,
@@ -274,7 +67,7 @@ interface PlaceholderAPI {
             params: PlaceholderParameters = PlaceholderParameters.EMPTY
     ) = getValue(key, visitor, defaultValue, params, GlobalScope.defaultContext)
 
-    fun getValue(
+    abstract fun getValue(
             key: String,
             visitor: Player? = null,
             defaultValue: String? = key,
@@ -282,76 +75,108 @@ interface PlaceholderAPI {
             context: AnyContext = GlobalScope.defaultContext
     ): String?
 
-    @JvmDefault
     fun updatePlaceholder(key: String) = updatePlaceholder(key, null)
 
     fun updatePlaceholder(key: String, visitor: Player?) = updatePlaceholder(key, visitor, GlobalScope.defaultContext)
 
-    fun updatePlaceholder(key: String, visitor: Player?, context: AnyContext)
+    abstract fun updatePlaceholder(key: String, visitor: Player?, context: AnyContext)
 
-    @JvmDefault
     fun translateString(input: String) = translateString(input, null)
 
-    @JvmDefault
     fun translateString(
             input: String,
             visitor: Player? = null
     ) = translateString(input, visitor, GlobalScope.defaultContext, input.matchPlaceholders())
 
-    @JvmDefault
     fun translateString(
             input: String,
             visitor: Player? = null,
             context: AnyContext = GlobalScope.defaultContext
     ) = translateString(input, visitor, context, input.matchPlaceholders())
 
-    fun translateString(input: String, visitor: Player?, context: AnyContext, matched: Collection<MatchedGroup>): String
+    abstract fun translateString(input: String, visitor: Player?, context: AnyContext, matched: Collection<MatchedGroup>): String
 
     fun findPlaceholders(input: String, scope: AnyScope = GlobalScope) = findPlaceholders(input.matchPlaceholders(), scope)
 
-    fun findPlaceholders(matched: Collection<MatchedGroup>, scope: AnyScope = GlobalScope): List<AnyPlaceholder>
+    abstract fun findPlaceholders(matched: Collection<MatchedGroup>, scope: AnyScope = GlobalScope): List<AnyPlaceholder>
 
-    fun formatTime(millis: Long): String
+    abstract fun formatTime(millis: Long): String
 
     fun formatDate(date: Date) = formatDate(date.time)
 
-    fun formatDate(millis: Long): String
+    abstract fun formatDate(millis: Long): String
 
-    fun formatBoolean(value: Boolean): String
+    @Deprecated("formatBoolean() was replaced by a more generic function", ReplaceWith("formatObject(value)"))
+    abstract fun formatBoolean(value: Boolean): String
 
-    fun <T> buildStatic(name: String, loader: Function<PlaceholderParameters, T?>) = StaticBuilder(
+    abstract fun formatObject(value: Any?): String
+
+    abstract fun <T : Any> registerFormatter(clazz: KClass<T>, formatFun: (T) -> String)
+
+    fun <T : Any> registerFormatter(clazz: Class<T>, formatFun: Function<T, String>) = registerFormatter(clazz.kotlin) { formatFun.apply(it) }
+
+    abstract fun getFormatter(clazz: KClass<*>): Formatter
+
+    fun getFormatter(obj: Any) = getFormatter(obj::class)
+
+    fun getFormatter(clazz: Class<*>) = getFormatter(clazz.kotlin)
+
+    inline fun <reified T : Any?> buildStatic(name: String, noinline loader: (PlaceholderParameters) -> T?) = StaticBuilder(
             name,
-            loader
-    )
+            T::class
+    ) { params: PlaceholderParameters, _: AnyContext -> loader(params) }
 
-    fun <T, ST, S : Scope<ST, S>> buildStatic(name: String, loader: (PlaceholderParameters, Scope<ST, S>.Context) -> T?) = StaticBuilder(
+    fun <T : Any?> buildStatic(typeClass: Class<T>, name: String, loader: Function<PlaceholderParameters, T?>) = StaticBuilder(
             name,
+            (typeClass as Class<*>).kotlin
+    ) { params: PlaceholderParameters, _: AnyContext -> loader.apply(params) }
+
+    inline fun <reified T : Any?, ST, S : Scope<ST, S>> buildStatic(name: String, noinline loader: (PlaceholderParameters, Scope<ST, S>.Context) -> T?) = StaticBuilder(
+            name,
+            T::class,
             loader as (PlaceholderParameters, AnyContext) -> T?
     )
 
-    fun <T> buildVisitorSensitive(name: String, loader: BiFunction<Player, PlaceholderParameters, T?>) = VisitorBuilder(
+    fun <T : Any?, ST, S : Scope<ST, S>> buildStatic(typeClass: Class<T>, name: String, loader: BiFunction<PlaceholderParameters, Scope<ST, S>.Context, T?>) = StaticBuilder(
             name,
-            loader
+            (typeClass as Class<*>).kotlin,
+            { params: PlaceholderParameters, context: Scope<ST, S>.Context -> loader.apply(params, context) } as (PlaceholderParameters, AnyContext) -> T?
     )
 
-    fun <T, ST, S : Scope<ST, S>> buildVisitorSensitive(name: String, loader: (Player, PlaceholderParameters, Scope<ST, S>.Context) -> T?) = VisitorBuilder(
+    inline fun <reified T : Any?> buildVisitorSensitive(name: String, noinline loader: (Player, PlaceholderParameters) -> T?) = VisitorBuilder(
             name,
+            T::class
+    ) { player: Player, params: PlaceholderParameters, _: AnyContext -> loader(player, params) }
+
+    fun <T : Any?> buildVisitorSensitive(typeClass: Class<T>, name: String, loader: BiFunction<Player, PlaceholderParameters, T?>) = VisitorBuilder(
+            name,
+            (typeClass as Class<*>).kotlin
+    ) { player: Player, params: PlaceholderParameters, _: AnyContext -> loader.apply(player, params) }
+
+    inline fun <reified T : Any?, ST, S : Scope<ST, S>> buildVisitorSensitive(name: String, noinline loader: (Player, PlaceholderParameters, Scope<ST, S>.Context) -> T?) = VisitorBuilder(
+            name,
+            T::class,
             loader as (Player, PlaceholderParameters, AnyContext) -> T?
     )
 
-    class StaticBuilder<T> internal constructor(
-            name: String,
-            private val loader: (PlaceholderParameters, scopeContext: AnyContext) -> T?
-    ) : Builder<T, StaticBuilder<T>>(name) {
+    fun <T : Any?, ST, S : Scope<ST, S>> buildVisitorSensitive(typeClass: Class<T>, name: String, loader: TriFunction<Player, PlaceholderParameters, Scope<ST, S>.Context, T?>) = VisitorBuilder(
+            name,
+            (typeClass as Class<*>).kotlin,
+            { player: Player, params: PlaceholderParameters, context: Scope<ST, S>.Context ->
+                loader.apply(player, params, context)
+            } as (Player, PlaceholderParameters, AnyContext) -> T?
+    )
 
-        internal constructor(
-                name: String,
-                loader: Function<PlaceholderParameters, T?>
-        ) : this(name, { parameters, _ -> loader.apply(parameters) })
+    class StaticBuilder<T : Any?> constructor(
+            name: String,
+            typeClass: KClass<*>,
+            private val loader: (PlaceholderParameters, scopeContext: AnyContext) -> T?
+    ) : Builder<T, StaticBuilder<T>>(name, typeClass) {
 
         override fun build() {
             getInstance().staticPlaceholder(
                     name,
+                    typeClass,
                     loader,
                     updateInterval,
                     autoUpdate,
@@ -362,19 +187,16 @@ interface PlaceholderAPI {
         }
     }
 
-    class VisitorBuilder<T> internal constructor(
+    class VisitorBuilder<T : Any?> constructor(
             name: String,
+            typeClass: KClass<*>,
             private val loader: (Player, PlaceholderParameters, AnyContext) -> T?
-    ) : Builder<T, VisitorBuilder<T>>(name) {
-
-        internal constructor(
-                name: String,
-                loader: BiFunction<Player, PlaceholderParameters, T?>
-        ) : this(name, { player, parameters, _ -> loader.apply(player, parameters) })
+    ) : Builder<T, VisitorBuilder<T>>(name, typeClass) {
 
         override fun build() {
             getInstance().visitorSensitivePlaceholder(
                     name,
+                    typeClass,
                     loader,
                     updateInterval,
                     autoUpdate,
@@ -387,8 +209,9 @@ interface PlaceholderAPI {
     }
 
     @Suppress("UNCHECKED_CAST")
-    abstract class Builder<T, B : Builder<T, B>> internal constructor(
-            val name: String
+    abstract class Builder<T : Any?, B : Builder<T, B>> internal constructor(
+            val name: String,
+            val typeClass: KClass<*>
     ) {
 
         private val self by lazy { this as B }

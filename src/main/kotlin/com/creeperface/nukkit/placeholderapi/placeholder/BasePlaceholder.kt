@@ -10,13 +10,13 @@ import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderChangeListener
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderUpdateEvent
 import com.creeperface.nukkit.placeholderapi.api.util.AnyContext
 import com.creeperface.nukkit.placeholderapi.api.util.AnyScope
-import com.creeperface.nukkit.placeholderapi.util.toFormattedString
+import com.creeperface.nukkit.placeholderapi.api.util.Formatter
 import java.util.*
 
 /**
  * @author CreeperFace
  */
-abstract class BasePlaceholder<T : Any?>(override val name: String, override val updateInterval: Int, override val autoUpdate: Boolean, override val aliases: Set<String>, override val processParameters: Boolean, override val scope: AnyScope) : Placeholder<T> {
+abstract class BasePlaceholder<T : Any?>(override val name: String, override val updateInterval: Int, override val autoUpdate: Boolean, override val aliases: Set<String>, override val processParameters: Boolean, override val scope: AnyScope, override val formatter: Formatter) : Placeholder<T> {
 
     protected val changeListeners = mutableMapOf<Plugin, PlaceholderChangeListener<T>>()
 
@@ -52,7 +52,7 @@ abstract class BasePlaceholder<T : Any?>(override val name: String, override val
 
     protected abstract fun loadValue(parameters: PlaceholderParameters, context: AnyContext, player: Player? = null): T?
 
-    protected fun safeValue() = value?.toFormattedString() ?: name
+    protected fun safeValue() = value?.let { formatter(it) } ?: name
 
     @JvmOverloads
     protected fun checkForUpdate(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: AnyContext = scope.defaultContext, player: Player? = null, force: Boolean = false): Boolean {

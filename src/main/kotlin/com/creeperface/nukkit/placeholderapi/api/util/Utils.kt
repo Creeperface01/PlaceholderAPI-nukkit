@@ -9,6 +9,7 @@ import java.util.regex.Pattern
 /**
  * @author CreeperFace
  */
+typealias Formatter = (Any?) -> String
 
 typealias AnyScope = Scope<out Any?, *>
 
