@@ -1,9 +1,11 @@
 package com.creeperface.nukkit.placeholderapi.api
 
+import com.creeperface.nukkit.placeholderapi.api.util.MatchedGroup
+
 /**
  * @author CreeperFace
  */
-class PlaceholderParameters(private val params: Map<String, String>, private val unnamed: List<String>) {
+data class PlaceholderParameters(private val params: Map<String, Parameter>, private val unnamed: List<Parameter>) {
 
     fun single() = unnamed.firstOrNull() ?: params.values.firstOrNull()
 
@@ -12,6 +14,8 @@ class PlaceholderParameters(private val params: Map<String, String>, private val
     fun getAll() = params.toMap()
 
     fun getUnnamed() = unnamed.toList()
+
+    data class Parameter(val name: String?, val value: String, val matchedGroup: MatchedGroup? = null)
 
     companion object {
         val EMPTY = PlaceholderParameters(emptyMap(), emptyList())

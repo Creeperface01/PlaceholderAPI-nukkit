@@ -3,6 +3,7 @@ package com.creeperface.nukkit.placeholderapi.api
 import cn.nukkit.Player
 import com.creeperface.nukkit.placeholderapi.PlaceholderAPIIml
 import com.creeperface.nukkit.placeholderapi.api.scope.GlobalScope
+import com.creeperface.nukkit.placeholderapi.api.scope.Scope
 import com.creeperface.nukkit.placeholderapi.api.util.*
 import java.util.*
 import java.util.function.BiFunction
@@ -11,7 +12,7 @@ import java.util.function.Function
 /**
  * @author CreeperFace
  */
-@Suppress("DEPRECATION", "UNUSED")
+@Suppress("DEPRECATION", "UNUSED", "UNCHECKED_CAST")
 interface PlaceholderAPI {
 
     val globalScope: AnyScope
@@ -323,9 +324,9 @@ interface PlaceholderAPI {
             loader
     )
 
-    fun <T> buildStatic(name: String, loader: (PlaceholderParameters, AnyContext) -> T?) = StaticBuilder(
+    fun <T, ST, S : Scope<ST, S>> buildStatic(name: String, loader: (PlaceholderParameters, Scope<ST, S>.Context) -> T?) = StaticBuilder(
             name,
-            loader
+            loader as (PlaceholderParameters, AnyContext) -> T?
     )
 
     fun <T> buildVisitorSensitive(name: String, loader: BiFunction<Player, PlaceholderParameters, T?>) = VisitorBuilder(
@@ -333,9 +334,9 @@ interface PlaceholderAPI {
             loader
     )
 
-    fun <T> buildVisitorSensitive(name: String, loader: (Player, PlaceholderParameters, AnyContext) -> T?) = VisitorBuilder(
+    fun <T, ST, S : Scope<ST, S>> buildVisitorSensitive(name: String, loader: (Player, PlaceholderParameters, Scope<ST, S>.Context) -> T?) = VisitorBuilder(
             name,
-            loader
+            loader as (Player, PlaceholderParameters, AnyContext) -> T?
     )
 
     class StaticBuilder<T> internal constructor(
