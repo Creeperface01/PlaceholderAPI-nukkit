@@ -115,7 +115,7 @@ abstract class PlaceholderAPI {
 
     fun <T : Any> registerFormatter(clazz: Class<T>, formatFun: Function<T, String>) = registerFormatter(clazz.kotlin) { formatFun.apply(it) }
 
-    abstract fun getFormatter(clazz: KClass<*>): Formatter
+    abstract fun getFormatter(clazz: KClass<*>): PFormatter
 
     fun getFormatter(obj: Any) = getFormatter(obj::class)
 

@@ -32,7 +32,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
 
     private val updatePlaceholders = mutableMapOf<String, AnyPlaceholder>()
 
-    private val formatters = mutableMapOf<KClass<*>, Formatter>()
+    private val formatters = mutableMapOf<KClass<*>, PFormatter>()
 
     val configuration: Configuration
 
@@ -276,8 +276,8 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
         }
     }
 
-    override fun getFormatter(clazz: KClass<*>): Formatter {
-        var formatter: Formatter? = null
+    override fun getFormatter(clazz: KClass<*>): PFormatter {
+        var formatter: PFormatter? = null
         var currentLevel = Int.MAX_VALUE
 
         formatters.forEach { (formClazz, form) ->

@@ -4,7 +4,7 @@ import cn.nukkit.Player
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
 import com.creeperface.nukkit.placeholderapi.api.util.AnyContext
 import com.creeperface.nukkit.placeholderapi.api.util.AnyScope
-import com.creeperface.nukkit.placeholderapi.api.util.Formatter
+import com.creeperface.nukkit.placeholderapi.api.util.PFormatter
 import java.util.*
 
 /**
@@ -17,7 +17,7 @@ open class VisitorSensitivePlaceholder<T : Any?>(
         aliases: Set<String>,
         processParameters: Boolean,
         scope: AnyScope,
-        formatter: Formatter,
+        formatter: PFormatter,
         private val loader: (Player, PlaceholderParameters, AnyContext) -> T?
 
 ) : BasePlaceholder<T>(
