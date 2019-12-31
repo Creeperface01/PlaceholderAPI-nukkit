@@ -5,6 +5,7 @@ import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
 import com.creeperface.nukkit.placeholderapi.api.scope.Scope
 import com.creeperface.nukkit.placeholderapi.util.Parser
 import java.util.regex.Pattern
+import kotlin.reflect.KClass
 
 /**
  * @author CreeperFace
@@ -12,6 +13,7 @@ import java.util.regex.Pattern
 typealias PFormatter = (Any?) -> String
 
 typealias AnyScope = Scope<out Any?, *>
+typealias AnyScopeClass = KClass<out Scope<out Any?, *>>
 
 typealias AnyContext = Scope<out Any?, *>.Context
 typealias AnyPlaceholder = Placeholder<out Any?>

@@ -10,19 +10,40 @@ import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderChangeListener
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderUpdateEvent
 import com.creeperface.nukkit.placeholderapi.api.util.AnyContext
 import com.creeperface.nukkit.placeholderapi.api.util.AnyScope
+import com.creeperface.nukkit.placeholderapi.api.util.AnyScopeClass
 import com.creeperface.nukkit.placeholderapi.api.util.PFormatter
 import java.util.*
+import kotlin.reflect.full.staticProperties
+import kotlin.reflect.typeOf
 
 /**
  * @author CreeperFace
  */
-abstract class BasePlaceholder<T : Any?>(override val name: String, override val updateInterval: Int, override val autoUpdate: Boolean, override val aliases: Set<String>, override val processParameters: Boolean, override val scope: AnyScope, override val formatter: PFormatter) : Placeholder<T> {
+@UseExperimental(ExperimentalStdlibApi::class)
+abstract class BasePlaceholder<T : Any?>(override val name: String, override val updateInterval: Int, override val autoUpdate: Boolean, override val aliases: Set<String>, override val processParameters: Boolean, scope: AnyScopeClass, override val formatter: PFormatter) : Placeholder<T> {
 
     protected val changeListeners = mutableMapOf<Plugin, PlaceholderChangeListener<T>>()
 
     protected var value: T? = null
     var lastUpdate: Long = 0
     val server: Server = Server.getInstance()
+
+    override lateinit var scope: AnyScope
+
+    init {
+        run {
+            scope.objectInstance?.let {
+                this.scope = it
+                return@run
+            }
+
+            val scopeType = typeOf<AnyScope>()
+            this.scope = scope.staticProperties.find {
+                it.name.equals("instance", true) && it.returnType == scopeType
+            }?.get() as? AnyScope
+                    ?: throw RuntimeException("Could not find scope instance for class ${scope.qualifiedName}")
+        }
+    }
 
     override fun getValue(parameters: PlaceholderParameters, context: AnyContext, player: Player?): String {
         if (value == null || readyToUpdate()) {

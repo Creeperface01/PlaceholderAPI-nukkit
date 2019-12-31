@@ -30,7 +30,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
     override val globalScope = GlobalScope
 
     private val globalPlaceholders = mutableMapOf<String, AnyPlaceholder>()
-    private val scopePlaceholders = mutableMapOf<AnyScope, PlaceholderGroup>()
+    private val scopePlaceholders = mutableMapOf<AnyScopeClass, PlaceholderGroup>()
 
     private val updatePlaceholders = mutableMapOf<String, AnyPlaceholder>()
 
@@ -81,7 +81,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
             updateInterval: Int,
             autoUpdate: Boolean,
             processParameters: Boolean,
-            scope: AnyScope,
+            scope: AnyScopeClass,
             vararg aliases: String) {
         registerPlaceholder(
                 StaticPlaceHolder(
@@ -104,7 +104,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
             updateInterval: Int,
             autoUpdate: Boolean,
             processParameters: Boolean,
-            scope: AnyScope,
+            scope: AnyScopeClass,
             vararg aliases: String) {
         registerPlaceholder(
                 VisitorSensitivePlaceholder(
@@ -121,7 +121,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
     }
 
     override fun registerPlaceholder(placeholder: AnyPlaceholder) {
-        val group = this.scopePlaceholders.computeIfAbsent(placeholder.scope) { mutableMapOf() }
+        val group = this.scopePlaceholders.computeIfAbsent(placeholder.scope::class) { mutableMapOf() }
         val existing = group.putIfAbsent(placeholder.name, placeholder)
 
         require(existing == null) { "Trying to register placeholder '${placeholder.name}' which already exists" }
@@ -192,7 +192,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
         var current = context
 
         while (true) {
-            scopePlaceholders[current.scope]?.get(key)?.let {
+            scopePlaceholders[current.scope::class]?.get(key)?.let {
                 placeholderContext.element = current
                 return it
             }
@@ -211,7 +211,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
         var current = scope
 
         while (true) {
-            scopePlaceholders[scope]?.get(key)?.let {
+            scopePlaceholders[scope::class]?.get(key)?.let {
                 return it
             }
 
@@ -244,7 +244,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
 
         val placeholders = mutableMapOf<String, AnyPlaceholder>()
         scopes.reversed().forEach {
-            scopePlaceholders[it]?.let { group ->
+            scopePlaceholders[it::class]?.let { group ->
                 placeholders.putAll(group)
             }
         }

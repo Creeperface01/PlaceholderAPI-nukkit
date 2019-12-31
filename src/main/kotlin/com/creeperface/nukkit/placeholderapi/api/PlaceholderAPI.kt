@@ -14,7 +14,7 @@ import kotlin.reflect.KClass
  * @author CreeperFace
  */
 @Suppress("DEPRECATION", "UNUSED", "UNCHECKED_CAST")
-abstract class PlaceholderAPI {
+abstract class PlaceholderAPI internal constructor() {
 
     abstract val globalScope: AnyScope
 
@@ -25,7 +25,7 @@ abstract class PlaceholderAPI {
             updateInterval: Int = -1,
             autoUpdate: Boolean = false,
             processParameters: Boolean = false,
-            scope: AnyScope = GlobalScope,
+            scope: AnyScopeClass = GlobalScope::class,
             vararg aliases: String
     )
 
@@ -36,7 +36,7 @@ abstract class PlaceholderAPI {
             updateInterval: Int = -1,
             autoUpdate: Boolean = false,
             processParameters: Boolean = false,
-            scope: AnyScope = GlobalScope,
+            scope: AnyScopeClass = GlobalScope::class,
             vararg aliases: String
     )
 
@@ -131,15 +131,17 @@ abstract class PlaceholderAPI {
             (typeClass as Class<*>).kotlin
     ) { params: PlaceholderParameters, _: AnyContext -> loader.apply(params) }
 
-    inline fun <reified T : Any?, ST, S : Scope<ST, S>> buildStatic(name: String, noinline loader: (PlaceholderParameters, Scope<ST, S>.Context) -> T?) = StaticBuilder(
+    inline fun <reified T : Any?, ST, reified S : Scope<ST, S>> buildStatic(name: String, noinline loader: (PlaceholderParameters, Scope<ST, S>.Context) -> T?) = StaticBuilder(
             name,
             T::class,
+            S::class,
             loader as (PlaceholderParameters, AnyContext) -> T?
     )
 
-    fun <T : Any?, ST, S : Scope<ST, S>> buildStatic(typeClass: Class<T>, name: String, loader: BiFunction<PlaceholderParameters, Scope<ST, S>.Context, T?>) = StaticBuilder(
+    fun <T : Any?, ST, S : Scope<ST, S>> buildStatic(typeClass: Class<T>, scopeClass: Class<S>, name: String, loader: BiFunction<PlaceholderParameters, Scope<ST, S>.Context, T?>) = StaticBuilder(
             name,
             (typeClass as Class<*>).kotlin,
+            scopeClass.kotlin,
             { params: PlaceholderParameters, context: Scope<ST, S>.Context -> loader.apply(params, context) } as (PlaceholderParameters, AnyContext) -> T?
     )
 
@@ -153,15 +155,17 @@ abstract class PlaceholderAPI {
             (typeClass as Class<*>).kotlin
     ) { player: Player, params: PlaceholderParameters, _: AnyContext -> loader.apply(player, params) }
 
-    inline fun <reified T : Any?, ST, S : Scope<ST, S>> buildVisitorSensitive(name: String, noinline loader: (Player, PlaceholderParameters, Scope<ST, S>.Context) -> T?) = VisitorBuilder(
+    inline fun <reified T : Any?, ST, reified S : Scope<ST, S>> buildVisitorSensitive(name: String, noinline loader: (Player, PlaceholderParameters, Scope<ST, S>.Context) -> T?) = VisitorBuilder(
             name,
             T::class,
+            S::class,
             loader as (Player, PlaceholderParameters, AnyContext) -> T?
     )
 
-    fun <T : Any?, ST, S : Scope<ST, S>> buildVisitorSensitive(typeClass: Class<T>, name: String, loader: TriFunction<Player, PlaceholderParameters, Scope<ST, S>.Context, T?>) = VisitorBuilder(
+    fun <T : Any?, ST, S : Scope<ST, S>> buildVisitorSensitive(typeClass: Class<T>, scopeClass: Class<S>, name: String, loader: TriFunction<Player, PlaceholderParameters, Scope<ST, S>.Context, T?>) = VisitorBuilder(
             name,
             (typeClass as Class<*>).kotlin,
+            scopeClass.kotlin,
             { player: Player, params: PlaceholderParameters, context: Scope<ST, S>.Context ->
                 loader.apply(player, params, context)
             } as (Player, PlaceholderParameters, AnyContext) -> T?
@@ -170,8 +174,9 @@ abstract class PlaceholderAPI {
     class StaticBuilder<T : Any?> constructor(
             name: String,
             typeClass: KClass<*>,
+            scopeClass: AnyScopeClass = GlobalScope::class,
             private val loader: (PlaceholderParameters, scopeContext: AnyContext) -> T?
-    ) : Builder<T, StaticBuilder<T>>(name, typeClass) {
+    ) : Builder<T, StaticBuilder<T>>(name, typeClass, scopeClass) {
 
         override fun build() {
             getInstance().staticPlaceholder(
@@ -181,7 +186,7 @@ abstract class PlaceholderAPI {
                     updateInterval,
                     autoUpdate,
                     processParameters,
-                    scope,
+                    scopeClass,
                     *aliases
             )
         }
@@ -190,8 +195,9 @@ abstract class PlaceholderAPI {
     class VisitorBuilder<T : Any?> constructor(
             name: String,
             typeClass: KClass<*>,
+            scopeClass: AnyScopeClass = GlobalScope::class,
             private val loader: (Player, PlaceholderParameters, AnyContext) -> T?
-    ) : Builder<T, VisitorBuilder<T>>(name, typeClass) {
+    ) : Builder<T, VisitorBuilder<T>>(name, typeClass, scopeClass) {
 
         override fun build() {
             getInstance().visitorSensitivePlaceholder(
@@ -201,7 +207,7 @@ abstract class PlaceholderAPI {
                     updateInterval,
                     autoUpdate,
                     processParameters,
-                    scope,
+                    scopeClass,
                     *aliases
             )
         }
@@ -211,7 +217,8 @@ abstract class PlaceholderAPI {
     @Suppress("UNCHECKED_CAST")
     abstract class Builder<T : Any?, B : Builder<T, B>> internal constructor(
             val name: String,
-            val typeClass: KClass<*>
+            val typeClass: KClass<*>,
+            val scopeClass: AnyScopeClass
     ) {
 
         private val self by lazy { this as B }
@@ -220,7 +227,6 @@ abstract class PlaceholderAPI {
         protected var autoUpdate = false
         protected var aliases = emptyArray<String>()
         protected var processParameters = false
-        protected var scope: AnyScope = GlobalScope
 
         fun updateInterval(updateInterval: Int): B {
             this.updateInterval = updateInterval
@@ -234,11 +240,6 @@ abstract class PlaceholderAPI {
 
         fun aliases(vararg aliases: String): B {
             this.aliases = arrayOf(*aliases)
-            return self
-        }
-
-        fun scope(scope: AnyScope): B {
-            this.scope = scope
             return self
         }
 
