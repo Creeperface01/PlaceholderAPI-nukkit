@@ -17,5 +17,8 @@ boolean_format:
   true: "yes"
   false: "no"
 
+#separator to format arrays. So list of players will be formatted like "player1, player2, player3"
+array_format: ", "
+
 #number of digits displayed
 coordinates_accuracy: 2

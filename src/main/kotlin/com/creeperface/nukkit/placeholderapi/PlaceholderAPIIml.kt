@@ -4,7 +4,9 @@ import cn.nukkit.AdventureSettings
 import cn.nukkit.Nukkit
 import cn.nukkit.Player
 import cn.nukkit.Server
+import cn.nukkit.block.Block
 import cn.nukkit.entity.Entity
+import cn.nukkit.item.Item
 import cn.nukkit.plugin.Plugin
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
 import com.creeperface.nukkit.placeholderapi.api.scope.GlobalScope
@@ -61,8 +63,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
         configuration = Configuration(this)
         configuration.load()
 
-        registerFormatter(Boolean::class) { formatBoolean(it) }
-        registerFormatter(Date::class) { formatDate(it) }
+        registerDefaultFormatters()
     }
 
     internal fun init() {
@@ -294,6 +295,16 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
         }
 
         return formatter ?: { it.toString() }
+    }
+
+    private fun registerDefaultFormatters() {
+        registerFormatter(Boolean::class) { formatBoolean(it) }
+        registerFormatter(Date::class) { formatDate(it) }
+        registerFormatter(Iterable::class) { it.joinToString(configuration.arraySeparator) }
+        registerFormatter(Array<Any?>::class) { it.joinToString(configuration.arraySeparator) }
+        registerFormatter(Player::class) { it.name }
+        registerFormatter(Item::class) { it.name }
+        registerFormatter(Block::class) { it.name }
     }
 
     private fun registerDefaultPlaceholders() {
