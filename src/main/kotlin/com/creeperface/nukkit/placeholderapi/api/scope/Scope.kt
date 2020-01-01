@@ -13,7 +13,7 @@ abstract class Scope<T, S : Scope<T, S>> {
     val placeholders = mutableMapOf<String, AnyPlaceholder>()
 
     open val defaultContext: Context
-        get() = throw UnsupportedOperationException("Scope ${this::class.java.name} doesn't have default scope")
+        get() = throw UnsupportedOperationException("Scope ${this::class.java.name} doesn't have a default scope")
 
     open fun hasDefaultContext() = false
 
