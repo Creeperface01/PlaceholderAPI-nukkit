@@ -8,18 +8,20 @@ import com.creeperface.nukkit.placeholderapi.api.Placeholder
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderChangeListener
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderUpdateEvent
+import com.creeperface.nukkit.placeholderapi.api.scope.Scope
 import com.creeperface.nukkit.placeholderapi.api.util.AnyContext
 import com.creeperface.nukkit.placeholderapi.api.util.AnyScope
 import com.creeperface.nukkit.placeholderapi.api.util.AnyScopeClass
 import com.creeperface.nukkit.placeholderapi.api.util.PFormatter
 import java.util.*
+import kotlin.reflect.KClass
+import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.staticProperties
-import kotlin.reflect.typeOf
+import kotlin.reflect.jvm.isAccessible
 
 /**
  * @author CreeperFace
  */
-@UseExperimental(ExperimentalStdlibApi::class)
 abstract class BasePlaceholder<T : Any?>(override val name: String, override val updateInterval: Int, override val autoUpdate: Boolean, override val aliases: Set<String>, override val processParameters: Boolean, scope: AnyScopeClass, override val formatter: PFormatter) : Placeholder<T> {
 
     protected val changeListeners = mutableMapOf<Plugin, PlaceholderChangeListener<T>>()
@@ -37,11 +39,17 @@ abstract class BasePlaceholder<T : Any?>(override val name: String, override val
                 return@run
             }
 
-            val scopeType = typeOf<AnyScope>()
-            this.scope = scope.staticProperties.find {
-                it.name.equals("instance", true) && it.returnType == scopeType
-            }?.get() as? AnyScope
-                    ?: throw RuntimeException("Could not find scope instance for class ${scope.qualifiedName}")
+            val property = scope.staticProperties.find {
+                if (!it.name.equals("instance", true)) {
+                    return@find false
+                }
+
+                val classifier = it.returnType.classifier
+                return@find classifier is KClass<*> && classifier.isSubclassOf(Scope::class)
+            } ?: throw RuntimeException("Could not find scope instance for class ${scope.qualifiedName}")
+
+            property.isAccessible = true
+            this.scope = property.get() as AnyScope
         }
     }
 
