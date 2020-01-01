@@ -6,8 +6,6 @@ import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderChangeListener
 import com.creeperface.nukkit.placeholderapi.api.util.AnyContext
 import com.creeperface.nukkit.placeholderapi.api.util.AnyScope
 import com.creeperface.nukkit.placeholderapi.api.util.PFormatter
-import java.lang.reflect.ParameterizedType
-import java.lang.reflect.Type
 import kotlin.reflect.KClass
 
 /**
@@ -84,9 +82,4 @@ interface Placeholder<T : Any> {
     fun isVisitorSensitive() = false
 
     fun updateOrExecute(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: AnyContext = scope.defaultContext, player: Player? = null, action: Runnable)
-
-    fun getType(): Type {
-        val mySuperclass = this::class.java.genericSuperclass
-        return (mySuperclass as ParameterizedType).actualTypeArguments[0]
-    }
 }
