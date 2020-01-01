@@ -6,17 +6,19 @@ import com.creeperface.nukkit.placeholderapi.api.util.AnyContext
 import com.creeperface.nukkit.placeholderapi.api.util.AnyScopeClass
 import com.creeperface.nukkit.placeholderapi.api.util.PFormatter
 import java.util.*
+import kotlin.reflect.KClass
 
 /**
  * @author CreeperFace
  */
-open class VisitorSensitivePlaceholder<T : Any?>(
+open class VisitorSensitivePlaceholder<T : Any>(
         name: String,
         updateInterval: Int,
         autoUpdate: Boolean,
         aliases: Set<String>,
         processParameters: Boolean,
         scope: AnyScopeClass,
+        type: KClass<T>,
         formatter: PFormatter,
         private val loader: (Player, PlaceholderParameters, AnyContext) -> T?
 
@@ -27,6 +29,7 @@ open class VisitorSensitivePlaceholder<T : Any?>(
         aliases,
         processParameters,
         scope,
+        type,
         formatter
 ) {
 

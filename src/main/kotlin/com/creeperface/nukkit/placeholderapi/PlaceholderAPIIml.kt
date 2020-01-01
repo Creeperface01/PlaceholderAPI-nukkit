@@ -74,9 +74,9 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
         this.server.commandMap.register("placeholder", PlaceholderCommand())
     }
 
-    override fun <T : Any?> staticPlaceholder(
+    override fun <T : Any> staticPlaceholder(
             name: String,
-            typeClass: KClass<*>,
+            typeClass: KClass<T>,
             loader: (PlaceholderParameters, AnyContext) -> T?,
             updateInterval: Int,
             autoUpdate: Boolean,
@@ -91,15 +91,16 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
                         aliases.toSet(),
                         processParameters,
                         scope,
+                        typeClass,
                         getFormatter(typeClass),
                         loader
                 )
         )
     }
 
-    override fun <T : Any?> visitorSensitivePlaceholder(
+    override fun <T : Any> visitorSensitivePlaceholder(
             name: String,
-            typeClass: KClass<*>,
+            typeClass: KClass<T>,
             loader: (Player, PlaceholderParameters, AnyContext) -> T?,
             updateInterval: Int,
             autoUpdate: Boolean,
@@ -114,6 +115,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
                         aliases.toSet(),
                         processParameters,
                         scope,
+                        typeClass,
                         getFormatter(typeClass),
                         loader
                 )

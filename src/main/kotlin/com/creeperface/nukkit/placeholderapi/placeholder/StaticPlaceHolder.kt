@@ -5,17 +5,19 @@ import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
 import com.creeperface.nukkit.placeholderapi.api.util.AnyContext
 import com.creeperface.nukkit.placeholderapi.api.util.AnyScopeClass
 import com.creeperface.nukkit.placeholderapi.api.util.PFormatter
+import kotlin.reflect.KClass
 
 /**
  * @author CreeperFace
  */
-open class StaticPlaceHolder<T : Any?>(
+open class StaticPlaceHolder<T : Any>(
         name: String,
         updateInterval: Int,
         autoUpdate: Boolean,
         aliases: Set<String>,
         processParameters: Boolean,
         scope: AnyScopeClass,
+        type: KClass<T>,
         formatter: PFormatter,
         private val loader: (PlaceholderParameters, AnyContext) -> T?
 
@@ -26,6 +28,7 @@ open class StaticPlaceHolder<T : Any?>(
         aliases,
         processParameters,
         scope,
+        type,
         formatter
 ) {
 

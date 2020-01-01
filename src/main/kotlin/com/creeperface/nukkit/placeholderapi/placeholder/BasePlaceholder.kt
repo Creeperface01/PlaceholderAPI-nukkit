@@ -21,7 +21,7 @@ import kotlin.reflect.jvm.isAccessible
 /**
  * @author CreeperFace
  */
-abstract class BasePlaceholder<T : Any?>(override val name: String, override val updateInterval: Int, override val autoUpdate: Boolean, override val aliases: Set<String>, override val processParameters: Boolean, scope: AnyScopeClass, override val formatter: PFormatter) : Placeholder<T> {
+abstract class BasePlaceholder<T : Any>(override val name: String, override val updateInterval: Int, override val autoUpdate: Boolean, override val aliases: Set<String>, override val processParameters: Boolean, scope: AnyScopeClass, override val returnType: KClass<T>, override val formatter: PFormatter) : Placeholder<T> {
 
     protected val changeListeners = mutableMapOf<Plugin, PlaceholderChangeListener<T>>()
 

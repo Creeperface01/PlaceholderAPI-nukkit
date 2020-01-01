@@ -8,11 +8,12 @@ import com.creeperface.nukkit.placeholderapi.api.util.AnyScope
 import com.creeperface.nukkit.placeholderapi.api.util.PFormatter
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
+import kotlin.reflect.KClass
 
 /**
  * @author CreeperFace
  */
-interface Placeholder<T> {
+interface Placeholder<T : Any> {
 
     /**
      * Placeholder name
@@ -45,6 +46,8 @@ interface Placeholder<T> {
      * A scope where this placeholder can be applied
      */
     val scope: AnyScope
+
+    val returnType: KClass<T>
 
     /**
      * A Formatter instance for properly formatted output

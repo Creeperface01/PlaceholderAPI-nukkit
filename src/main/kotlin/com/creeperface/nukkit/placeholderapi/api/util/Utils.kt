@@ -16,7 +16,7 @@ typealias AnyScope = Scope<out Any?, *>
 typealias AnyScopeClass = KClass<out Scope<out Any?, *>>
 
 typealias AnyContext = Scope<out Any?, *>.Context
-typealias AnyPlaceholder = Placeholder<out Any?>
+typealias AnyPlaceholder = Placeholder<out Any>
 
 typealias PlaceholderGroup = MutableMap<String, AnyPlaceholder>
 
