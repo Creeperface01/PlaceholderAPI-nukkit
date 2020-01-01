@@ -8,7 +8,6 @@ import com.creeperface.nukkit.placeholderapi.api.Placeholder
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderChangeListener
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderUpdateEvent
-import com.creeperface.nukkit.placeholderapi.api.scope.Scope
 import com.creeperface.nukkit.placeholderapi.api.util.AnyContext
 import com.creeperface.nukkit.placeholderapi.api.util.AnyScope
 import com.creeperface.nukkit.placeholderapi.api.util.AnyScopeClass
@@ -45,7 +44,7 @@ abstract class BasePlaceholder<T : Any?>(override val name: String, override val
                 }
 
                 val classifier = it.returnType.classifier
-                return@find classifier is KClass<*> && classifier.isSubclassOf(Scope::class)
+                return@find classifier is KClass<*> && classifier.isSubclassOf(scope)
             } ?: throw RuntimeException("Could not find scope instance for class ${scope.qualifiedName}")
 
             property.isAccessible = true
