@@ -148,6 +148,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
     override fun getValue(key: String, visitor: Player?, defaultValue: String?, params: PlaceholderParameters, context: AnyContext): String? {
         val ref = Ref.ObjectRef<AnyContext>()
 
+        //TODO: placeholder as a parameter (calculate nested placeholders)
         getPlaceholder(key, context, ref)?.let {
             return it.getValue(params, ref.element, visitor)
         }

@@ -17,6 +17,12 @@ abstract class Scope<T, S : Scope<T, S>> {
 
     open fun hasDefaultContext() = false
 
+    @Suppress("UNCHECKED_CAST")
+    @JvmOverloads
+    open fun getContext(context: T, parentContext: AnyContext? = null): Context {
+        return Context(context, this as S, parentContext)
+    }
+
     open inner class Context(val context: T, val scope: S, parentContext: AnyContext? = null) {
 
         val parentContext: AnyContext?
