@@ -56,7 +56,6 @@ abstract class BasePlaceholder<T : Any>(override val name: String, override val 
         if (value == null || readyToUpdate()) {
             checkForUpdate(parameters, player = player, context = context)
         }
-
         return safeValue()
     }
 
@@ -84,8 +83,9 @@ abstract class BasePlaceholder<T : Any>(override val name: String, override val 
 
     @JvmOverloads
     protected fun checkForUpdate(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: AnyContext = scope.defaultContext, player: Player? = null, force: Boolean = false): Boolean {
-        if (!force && !readyToUpdate())
+        if (!force && !readyToUpdate()) {
             return false
+        }
 
         return checkValueUpdate(value, loadValue(parameters, context, player), player)
     }
@@ -120,7 +120,7 @@ abstract class BasePlaceholder<T : Any>(override val name: String, override val 
 
     override fun removeListener(plugin: Plugin) = changeListeners.remove(plugin)
 
-    protected open fun readyToUpdate() = updateInterval >= 0 && (value == null || updateInterval == 0 || System.currentTimeMillis() - lastUpdate > intervalMillis())
+    protected open fun readyToUpdate() = updateInterval == -1 || (updateInterval >= 0 && (value == null || updateInterval == 0 || System.currentTimeMillis() - lastUpdate > intervalMillis()))
 
     fun intervalMillis() = updateInterval * 50
 }

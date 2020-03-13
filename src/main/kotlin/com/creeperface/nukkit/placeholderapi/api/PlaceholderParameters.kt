@@ -11,9 +11,11 @@ data class PlaceholderParameters(private val params: Map<String, Parameter>, pri
 
     operator fun get(key: String) = params[key]
 
-    fun getAll() = params.toMap()
+    fun getNamed() = params.toMap()
 
     fun getUnnamed() = unnamed.toList()
+
+    fun getAll() = params.values + unnamed
 
     data class Parameter(val name: String?, val value: String, val matchedGroup: MatchedGroup? = null)
 

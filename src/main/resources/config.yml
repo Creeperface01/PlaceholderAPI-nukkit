@@ -4,7 +4,7 @@ version: 2
 #Sets the minimal delay between separate updates of a placeholder (in ticks).
 min_update_interval: 10
 
-#Sets the minimal delay between separate updates of an async placeholder (in ticks). Async placeholders usually processes some expansive operations and shouldn't be processed too often
+#Sets the minimal delay between separate updates of an async placeholder (in ticks). Async placeholders usually processes some expensive operations and shouldn't be processed too often
 min_async_update_interval: 200
 
 #format for date placeholder
