@@ -9,6 +9,7 @@ import cn.nukkit.entity.Entity
 import cn.nukkit.item.Item
 import cn.nukkit.plugin.Plugin
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
+import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderAPIInitializeEvent
 import com.creeperface.nukkit.placeholderapi.api.scope.GlobalScope
 import com.creeperface.nukkit.placeholderapi.api.util.*
 import com.creeperface.nukkit.placeholderapi.command.PlaceholderCommand
@@ -72,6 +73,9 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
         this.server.scheduler.scheduleRepeatingTask(this, { updatePlaceholders() }, configuration.updateInterval)
 
         this.server.commandMap.register("placeholder", PlaceholderCommand())
+        this.server.scheduler.scheduleTask(this) {
+            this.server.pluginManager.callEvent(PlaceholderAPIInitializeEvent(this))
+        }
     }
 
     override fun <T : Any> staticPlaceholder(

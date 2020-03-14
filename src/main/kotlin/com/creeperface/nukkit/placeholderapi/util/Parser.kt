@@ -87,7 +87,7 @@ object Parser {
                         return null
                     }
 
-                    return MatchedGroup(name.toString(), startIndex, i + 1, PlaceholderParameters(namedParameters, parameters))
+                    return MatchedGroup(input.substring(startIndex, i), name.toString(), startIndex, i, PlaceholderParameters(namedParameters, parameters))
                 }
 
                 if (char == '<') {

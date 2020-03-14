@@ -21,4 +21,4 @@ typealias PlaceholderGroup = MutableMap<String, AnyPlaceholder>
 
 fun String.matchPlaceholders() = Parser.parse(this)
 
-data class MatchedGroup(val value: String, val start: Int, val end: Int, val params: PlaceholderParameters = PlaceholderParameters.EMPTY)
+data class MatchedGroup(val raw: String, val value: String, val start: Int, val end: Int, val params: PlaceholderParameters = PlaceholderParameters.EMPTY)
