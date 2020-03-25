@@ -3,6 +3,7 @@ package com.creeperface.nukkit.placeholderapi.api
 import cn.nukkit.Player
 import cn.nukkit.plugin.Plugin
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderChangeListener
+import com.creeperface.nukkit.placeholderapi.api.scope.Scope
 import com.creeperface.nukkit.placeholderapi.api.util.AnyContext
 import com.creeperface.nukkit.placeholderapi.api.util.AnyScope
 import com.creeperface.nukkit.placeholderapi.api.util.PFormatter
@@ -82,4 +83,28 @@ interface Placeholder<T : Any> {
     fun isVisitorSensitive() = false
 
     fun updateOrExecute(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: AnyContext = scope.defaultContext, player: Player? = null, action: Runnable)
+
+    class VisitorEntry(
+            override val player: Player,
+            parameters: PlaceholderParameters,
+            context: AnyContext
+    ) : Entry(player, parameters, context)
+
+    class VisitorScopedEntry<ST, S : Scope<ST, S>>(
+            override val player: Player,
+            parameters: PlaceholderParameters,
+            context: Scope<ST, S>.Context
+    ) : ScopedEntry<ST, S>(player, parameters, context)
+
+    open class ScopedEntry<ST, S : Scope<ST, S>>(
+            player: Player?,
+            parameters: PlaceholderParameters,
+            override val context: Scope<ST, S>.Context
+    ) : Entry(player, parameters, context)
+
+    open class Entry(
+            open val player: Player?,
+            val parameters: PlaceholderParameters,
+            open val context: AnyContext
+    )
 }

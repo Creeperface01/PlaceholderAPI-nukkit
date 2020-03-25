@@ -81,7 +81,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
     override fun <T : Any> staticPlaceholder(
             name: String,
             typeClass: KClass<T>,
-            loader: (PlaceholderParameters, AnyContext) -> T?,
+            loader: Loader<T>,
             updateInterval: Int,
             autoUpdate: Boolean,
             processParameters: Boolean,
@@ -105,7 +105,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
     override fun <T : Any> visitorSensitivePlaceholder(
             name: String,
             typeClass: KClass<T>,
-            loader: (Player, PlaceholderParameters, AnyContext) -> T?,
+            loader: Loader<T>,
             updateInterval: Int,
             autoUpdate: Boolean,
             processParameters: Boolean,
@@ -315,44 +315,44 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
     }
 
     private fun registerDefaultPlaceholders() {
-        buildVisitorSensitive("player") { p, _ -> p.name }.aliases("playername").build()
-        buildVisitorSensitive("player_displayname") { p, _ -> p.displayName }.aliases().build()
-        buildVisitorSensitive("player_uuid") { p, _ -> p.uniqueId }.aliases().build()
-        buildVisitorSensitive("player_ping") { p, _ -> p.ping }.aliases().build()
-        buildVisitorSensitive("player_level") { p, _ -> p.level?.name }.aliases().build()
-        buildVisitorSensitive("player_can_fly") { p, _ -> p.adventureSettings?.get(AdventureSettings.Type.ALLOW_FLIGHT) }.aliases().build()
-        buildVisitorSensitive("player_flying") { p, _ -> p.adventureSettings?.get(AdventureSettings.Type.FLYING) }.aliases().build()
-        buildVisitorSensitive("player_health") { p, _ -> p.health }.aliases().build()
-        buildVisitorSensitive("player_max_health") { p, _ -> p.maxHealth }.aliases().build()
-        buildVisitorSensitive("player_saturation") { p, _ -> p.foodData.foodSaturationLevel }.aliases().build()
-        buildVisitorSensitive("player_food") { p, _ -> p.foodData.level }.aliases().build()
-        buildVisitorSensitive("player_gamemode") { p, _ -> Server.getGamemodeString(p.gamemode, true) }.aliases().build()
-        buildVisitorSensitive("player_x") { p, _ -> p.x.round(configuration.coordsAccuracy) }.updateInterval(0).build()
-        buildVisitorSensitive("player_y") { p, _ -> p.y.round(configuration.coordsAccuracy) }.updateInterval(0).build()
-        buildVisitorSensitive("player_z") { p, _ -> p.z.round(configuration.coordsAccuracy) }.updateInterval(0).build()
-        buildVisitorSensitive("player_direction") { p, _ -> p.direction.getName() }.updateInterval(10).build()
-        buildVisitorSensitive("player_exp") { p, _ -> p.experience }.aliases("player_exp_total").build()
-        buildVisitorSensitive("player_exp_to_next") { p, _ -> Player.calculateRequireExperience(p.experienceLevel + 1) }.aliases().build()
-        buildVisitorSensitive("player_exp_level") { p, _ -> p.experienceLevel }.aliases().build()
-        buildVisitorSensitive("player_speed") { p, _ -> p.movementSpeed }.aliases().build()
-        buildVisitorSensitive("player_max_air") { p, _ -> p.getDataPropertyInt(Entity.DATA_MAX_AIR) }.updateInterval(100).build()
-        buildVisitorSensitive("player_remaining_air") { p, _ -> p.getDataPropertyInt(Entity.DATA_AIR) }.updateInterval(10).build()
-        buildVisitorSensitive("player_item_in_hand") { p, _ -> p.inventory?.itemInHand?.name }.updateInterval(10).build()
+        buildVisitorSensitive("player") { }.aliases("playername").build()
+        buildVisitorSensitive("player_displayname") { player.displayName }.aliases().build()
+        buildVisitorSensitive("player_uuid") { player.uniqueId }.aliases().build()
+        buildVisitorSensitive("player_ping") { player.ping }.aliases().build()
+        buildVisitorSensitive("player_level") { player.level?.name }.aliases().build()
+        buildVisitorSensitive("player_can_fly") { player.adventureSettings?.get(AdventureSettings.Type.ALLOW_FLIGHT) }.aliases().build()
+        buildVisitorSensitive("player_flying") { player.adventureSettings?.get(AdventureSettings.Type.FLYING) }.aliases().build()
+        buildVisitorSensitive("player_health") { player.health }.aliases().build()
+        buildVisitorSensitive("player_max_health") { player.maxHealth }.aliases().build()
+        buildVisitorSensitive("player_saturation") { player.foodData.foodSaturationLevel }.aliases().build()
+        buildVisitorSensitive("player_food") { player.foodData.level }.aliases().build()
+        buildVisitorSensitive("player_gamemode") { Server.getGamemodeString(player.gamemode, true) }.aliases().build()
+        buildVisitorSensitive("player_x") { player.x.round(configuration.coordsAccuracy) }.updateInterval(0).build()
+        buildVisitorSensitive("player_y") { player.y.round(configuration.coordsAccuracy) }.updateInterval(0).build()
+        buildVisitorSensitive("player_z") { player.z.round(configuration.coordsAccuracy) }.updateInterval(0).build()
+        buildVisitorSensitive("player_direction") { player.direction.getName() }.updateInterval(10).build()
+        buildVisitorSensitive("player_exp") { player.experience }.aliases("player_exp_total").build()
+        buildVisitorSensitive("player_exp_to_next") { Player.calculateRequireExperience(player.experienceLevel + 1) }.aliases().build()
+        buildVisitorSensitive("player_exp_level") { player.experienceLevel }.aliases().build()
+        buildVisitorSensitive("player_speed") { player.movementSpeed }.aliases().build()
+        buildVisitorSensitive("player_max_air") { player.getDataPropertyInt(Entity.DATA_MAX_AIR) }.updateInterval(100).build()
+        buildVisitorSensitive("player_remaining_air") { player.getDataPropertyInt(Entity.DATA_AIR) }.updateInterval(10).build()
+        buildVisitorSensitive("player_item_in_hand") { player.inventory?.itemInHand?.name }.updateInterval(10).build()
 
         val server = this.server
         val runtime = Runtime.getRuntime()
 
-        buildStatic("server_online") { _ -> server.onlinePlayers.size }.aliases().build()
-        buildStatic("server_max_players") { _ -> server.maxPlayers }.aliases().build()
-        buildStatic("server_motd") { _ -> server.network.name }.aliases().build()
-        buildStatic("server_ram_used") { _ -> (runtime.totalMemory() - runtime.freeMemory()).bytes2MB().round(configuration.coordsAccuracy) }.aliases().build()
-        buildStatic("server_ram_free") { _ -> runtime.freeMemory().bytes2MB().round(configuration.coordsAccuracy) }.aliases().build()
-        buildStatic("server_ram_total") { _ -> runtime.totalMemory().bytes2MB().round(configuration.coordsAccuracy) }.aliases().build()
-        buildStatic("server_ram_max") { _ -> runtime.maxMemory().bytes2MB().round(configuration.coordsAccuracy) }.aliases().build()
-        buildStatic("server_cores") { _ -> runtime.availableProcessors() }.aliases().build()
-        buildStatic("server_tps") { _ -> server.ticksPerSecondAverage }.aliases().build()
-        buildStatic("server_uptime") { _ -> (System.currentTimeMillis() - Nukkit.START_TIME).formatAsTime(configuration.timeFormat) }.aliases().build()
+        buildStatic("server_online") { server.onlinePlayers.size }.aliases().build()
+        buildStatic("server_max_players") { server.maxPlayers }.aliases().build()
+        buildStatic("server_motd") { server.network.name }.aliases().build()
+        buildStatic("server_ram_used") { (runtime.totalMemory() - runtime.freeMemory()).bytes2MB().round(configuration.coordsAccuracy) }.aliases().build()
+        buildStatic("server_ram_free") { runtime.freeMemory().bytes2MB().round(configuration.coordsAccuracy) }.aliases().build()
+        buildStatic("server_ram_total") { runtime.totalMemory().bytes2MB().round(configuration.coordsAccuracy) }.aliases().build()
+        buildStatic("server_ram_max") { runtime.maxMemory().bytes2MB().round(configuration.coordsAccuracy) }.aliases().build()
+        buildStatic("server_cores") { runtime.availableProcessors() }.aliases().build()
+        buildStatic("server_tps") { server.ticksPerSecondAverage }.aliases().build()
+        buildStatic("server_uptime") { (System.currentTimeMillis() - Nukkit.START_TIME).formatAsTime(configuration.timeFormat) }.aliases().build()
 
-        buildStatic("time") { _ -> formatTime(System.currentTimeMillis()) }.updateInterval(10).build()
+        buildStatic("time") { formatTime(System.currentTimeMillis()) }.updateInterval(10).build()
     }
 }

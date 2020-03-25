@@ -2,9 +2,7 @@ package com.creeperface.nukkit.placeholderapi.placeholder
 
 import cn.nukkit.Player
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
-import com.creeperface.nukkit.placeholderapi.api.util.AnyContext
-import com.creeperface.nukkit.placeholderapi.api.util.AnyScopeClass
-import com.creeperface.nukkit.placeholderapi.api.util.PFormatter
+import com.creeperface.nukkit.placeholderapi.api.util.*
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -20,8 +18,7 @@ open class VisitorSensitivePlaceholder<T : Any>(
         scope: AnyScopeClass,
         type: KClass<T>,
         formatter: PFormatter,
-        private val loader: (Player, PlaceholderParameters, AnyContext) -> T?
-
+        loader: Loader<T>
 ) : BasePlaceholder<T>(
         name,
         updateInterval,
@@ -30,7 +27,8 @@ open class VisitorSensitivePlaceholder<T : Any>(
         processParameters,
         scope,
         type,
-        formatter
+        formatter,
+        loader
 ) {
 
     private val cache = WeakHashMap<Player, Entry<T>>()
@@ -90,7 +88,8 @@ open class VisitorSensitivePlaceholder<T : Any>(
         }
     }
 
-    override fun loadValue(parameters: PlaceholderParameters, context: AnyContext, player: Player?) = if (player != null) loader(player, parameters, context) else null
+    override fun loadValue(parameters: PlaceholderParameters, context: AnyContext, player: Player?) =
+            if (player != null) loader(AnyValueEntry(player, parameters, context)) else null
 
     override fun forceUpdate(parameters: PlaceholderParameters, context: AnyContext, player: Player?): String {
         if (player == null)

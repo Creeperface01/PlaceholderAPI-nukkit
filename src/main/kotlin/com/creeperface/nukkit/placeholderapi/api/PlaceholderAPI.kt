@@ -21,7 +21,7 @@ abstract class PlaceholderAPI internal constructor() {
     abstract fun <T : Any> staticPlaceholder(
             name: String,
             typeClass: KClass<T>,
-            loader: (PlaceholderParameters, AnyContext) -> T?,
+            loader: Loader<T>,
             updateInterval: Int = -1,
             autoUpdate: Boolean = false,
             processParameters: Boolean = false,
@@ -32,7 +32,7 @@ abstract class PlaceholderAPI internal constructor() {
     abstract fun <T : Any> visitorSensitivePlaceholder(
             name: String,
             typeClass: KClass<T>,
-            loader: (Player, PlaceholderParameters, AnyContext) -> T?,
+            loader: Loader<T>,
             updateInterval: Int = -1,
             autoUpdate: Boolean = false,
             processParameters: Boolean = false,
@@ -121,61 +121,59 @@ abstract class PlaceholderAPI internal constructor() {
 
     fun getFormatter(clazz: Class<*>) = getFormatter(clazz.kotlin)
 
-    inline fun <reified T : Any> buildStatic(name: String, noinline loader: (PlaceholderParameters) -> T?) = StaticBuilder(
+    inline fun <reified T : Any> buildStatic(name: String, noinline loader: Loader<T>) = StaticBuilder(
             name,
-            T::class
-    ) { params: PlaceholderParameters, _: AnyContext -> loader(params) }
+            T::class,
+            loader = loader
+    )
 
     fun <T : Any> buildStatic(typeClass: Class<T>, name: String, loader: Function<PlaceholderParameters, T?>) = StaticBuilder(
             name,
             typeClass.kotlin
-    ) { params: PlaceholderParameters, _: AnyContext -> loader.apply(params) }
+    ) { loader.apply(parameters) }
 
-    inline fun <reified T : Any, ST, reified S : Scope<ST, S>> buildStatic(name: String, noinline loader: (PlaceholderParameters, Scope<ST, S>.Context) -> T?) = StaticBuilder(
+    inline fun <reified T : Any, ST, reified S : Scope<ST, S>> buildStaticScoped(name: String, noinline loader: ScopedLoader<ST, S, T>) = StaticBuilder(
             name,
             T::class,
             S::class,
-            loader as (PlaceholderParameters, AnyContext) -> T?
+            loader as Loader<T>
     )
 
-    fun <T : Any, ST, S : Scope<ST, S>> buildStatic(typeClass: Class<T>, scopeClass: Class<S>, name: String, loader: BiFunction<PlaceholderParameters, Scope<ST, S>.Context, T?>) = StaticBuilder(
+    fun <T : Any, ST, S : Scope<ST, S>> buildStaticScoped(typeClass: Class<T>, scopeClass: Class<S>, name: String, loader: BiFunction<PlaceholderParameters, Scope<ST, S>.Context, T?>) = StaticBuilder(
             name,
             typeClass.kotlin,
-            scopeClass.kotlin,
-            { params: PlaceholderParameters, context: Scope<ST, S>.Context -> loader.apply(params, context) } as (PlaceholderParameters, AnyContext) -> T?
-    )
+            scopeClass.kotlin
+    ) { loader.apply(parameters, context as Scope<ST, S>.Context) }
 
-    inline fun <reified T : Any> buildVisitorSensitive(name: String, noinline loader: (Player, PlaceholderParameters) -> T?) = VisitorBuilder(
+    inline fun <reified T : Any> buildVisitorSensitive(name: String, noinline loader: VisitorLoader<T>) = VisitorBuilder(
             name,
-            T::class
-    ) { player: Player, params: PlaceholderParameters, _: AnyContext -> loader(player, params) }
+            T::class,
+            loader = loader as Loader<T>
+    )
 
     fun <T : Any> buildVisitorSensitive(typeClass: Class<T>, name: String, loader: BiFunction<Player, PlaceholderParameters, T?>) = VisitorBuilder(
             name,
             typeClass.kotlin
-    ) { player: Player, params: PlaceholderParameters, _: AnyContext -> loader.apply(player, params) }
+    ) { loader.apply(player!!, parameters) }
 
-    inline fun <reified T : Any, ST, reified S : Scope<ST, S>> buildVisitorSensitive(name: String, noinline loader: (Player, PlaceholderParameters, Scope<ST, S>.Context) -> T?) = VisitorBuilder(
+    inline fun <reified T : Any, ST, reified S : Scope<ST, S>> buildVisitorSensitiveScoped(name: String, noinline loader: VisitorScopedLoader<ST, S, T>) = VisitorBuilder(
             name,
             T::class,
             S::class,
-            loader as (Player, PlaceholderParameters, AnyContext) -> T?
+            loader as Loader<T>
     )
 
-    fun <T : Any, ST, S : Scope<ST, S>> buildVisitorSensitive(typeClass: Class<T>, scopeClass: Class<S>, name: String, loader: TriFunction<Player, PlaceholderParameters, Scope<ST, S>.Context, T?>) = VisitorBuilder(
+    fun <T : Any, ST, S : Scope<ST, S>> buildVisitorSensitiveScoped(typeClass: Class<T>, scopeClass: Class<S>, name: String, loader: TriFunction<Player, PlaceholderParameters, Scope<ST, S>.Context, T?>) = VisitorBuilder(
             name,
             typeClass.kotlin,
-            scopeClass.kotlin,
-            { player: Player, params: PlaceholderParameters, context: Scope<ST, S>.Context ->
-                loader.apply(player, params, context)
-            } as (Player, PlaceholderParameters, AnyContext) -> T?
-    )
+            scopeClass.kotlin
+    ) { loader.apply(player!!, parameters, context as Scope<ST, S>.Context) }
 
     class StaticBuilder<T : Any> constructor(
             name: String,
             typeClass: KClass<T>,
             scopeClass: AnyScopeClass = GlobalScope::class,
-            private val loader: (PlaceholderParameters, scopeContext: AnyContext) -> T?
+            private val loader: AnyValueEntry.() -> T?
     ) : Builder<T, StaticBuilder<T>>(name, typeClass, scopeClass) {
 
         override fun build() {
@@ -196,7 +194,7 @@ abstract class PlaceholderAPI internal constructor() {
             name: String,
             typeClass: KClass<T>,
             scopeClass: AnyScopeClass = GlobalScope::class,
-            private val loader: (Player, PlaceholderParameters, AnyContext) -> T?
+            private val loader: AnyValueEntry.() -> T?
     ) : Builder<T, VisitorBuilder<T>>(name, typeClass, scopeClass) {
 
         override fun build() {

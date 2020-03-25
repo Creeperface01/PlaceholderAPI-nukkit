@@ -2,9 +2,7 @@ package com.creeperface.nukkit.placeholderapi.placeholder
 
 import cn.nukkit.Player
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
-import com.creeperface.nukkit.placeholderapi.api.util.AnyContext
-import com.creeperface.nukkit.placeholderapi.api.util.AnyScopeClass
-import com.creeperface.nukkit.placeholderapi.api.util.PFormatter
+import com.creeperface.nukkit.placeholderapi.api.util.*
 import kotlin.reflect.KClass
 
 /**
@@ -19,8 +17,7 @@ open class StaticPlaceHolder<T : Any>(
         scope: AnyScopeClass,
         type: KClass<T>,
         formatter: PFormatter,
-        private val loader: (PlaceholderParameters, AnyContext) -> T?
-
+        loader: Loader<T>
 ) : BasePlaceholder<T>(
         name,
         updateInterval,
@@ -29,11 +26,12 @@ open class StaticPlaceHolder<T : Any>(
         processParameters,
         scope,
         type,
-        formatter
+        formatter,
+        loader
 ) {
 
     override fun loadValue(parameters: PlaceholderParameters, context: AnyContext, player: Player?): T? {
-        return loader(parameters, context)
+        return loader(AnyValueEntry(null, parameters, context))
     }
 
     override fun forceUpdate(parameters: PlaceholderParameters, context: AnyContext, player: Player?): String {

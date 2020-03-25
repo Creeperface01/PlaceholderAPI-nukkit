@@ -8,10 +8,7 @@ import com.creeperface.nukkit.placeholderapi.api.Placeholder
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderChangeListener
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderUpdateEvent
-import com.creeperface.nukkit.placeholderapi.api.util.AnyContext
-import com.creeperface.nukkit.placeholderapi.api.util.AnyScope
-import com.creeperface.nukkit.placeholderapi.api.util.AnyScopeClass
-import com.creeperface.nukkit.placeholderapi.api.util.PFormatter
+import com.creeperface.nukkit.placeholderapi.api.util.*
 import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
@@ -21,7 +18,17 @@ import kotlin.reflect.jvm.isAccessible
 /**
  * @author CreeperFace
  */
-abstract class BasePlaceholder<T : Any>(override val name: String, override val updateInterval: Int, override val autoUpdate: Boolean, override val aliases: Set<String>, override val processParameters: Boolean, scope: AnyScopeClass, override val returnType: KClass<T>, override val formatter: PFormatter) : Placeholder<T> {
+abstract class BasePlaceholder<T : Any>(
+        override val name: String,
+        override val updateInterval: Int,
+        override val autoUpdate: Boolean,
+        override val aliases: Set<String>,
+        override val processParameters: Boolean,
+        scope: AnyScopeClass,
+        override val returnType: KClass<T>,
+        override val formatter: PFormatter,
+        protected open val loader: Loader<T>
+) : Placeholder<T> {
 
     protected val changeListeners = mutableMapOf<Plugin, PlaceholderChangeListener<T>>()
 

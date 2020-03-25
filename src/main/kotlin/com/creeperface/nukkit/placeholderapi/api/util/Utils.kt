@@ -16,6 +16,15 @@ typealias AnyScopeClass = KClass<out Scope<out Any?, *>>
 
 typealias AnyContext = Scope<out Any?, *>.Context
 typealias AnyPlaceholder = Placeholder<out Any>
+typealias ValueEntry<ST, S> = Placeholder.ScopedEntry<ST, S>
+typealias AnyValueEntry = Placeholder.Entry
+typealias VisitorValueEntry<ST, S> = Placeholder.VisitorScopedEntry<ST, S>
+typealias AnyVisitorValueEntry = Placeholder.VisitorEntry
+
+typealias Loader<T> = AnyValueEntry.() -> T?
+typealias VisitorLoader<T> = AnyVisitorValueEntry.() -> T?
+typealias ScopedLoader<ST, S, T> = ValueEntry<ST, S>.(Any?) -> T?
+typealias VisitorScopedLoader<ST, S, T> = VisitorValueEntry<ST, S>.(Any?) -> T?
 
 typealias PlaceholderGroup = MutableMap<String, AnyPlaceholder>
 
