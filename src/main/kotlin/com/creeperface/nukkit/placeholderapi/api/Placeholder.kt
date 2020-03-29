@@ -99,8 +99,11 @@ interface Placeholder<T : Any> {
     open class ScopedEntry<T, ST, S : Scope<ST, S>>(
             player: Player?,
             parameters: PlaceholderParameters,
-            override val context: Scope<ST, S>.Context
-    ) : Entry<T>(player, parameters, context)
+            final override val context: Scope<ST, S>.Context
+    ) : Entry<T>(player, parameters, context) {
+
+        val contextVal = context.context
+    }
 
     open class Entry<T>(
             open val player: Player?,

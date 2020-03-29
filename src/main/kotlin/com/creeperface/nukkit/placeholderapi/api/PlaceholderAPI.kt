@@ -232,16 +232,8 @@ abstract class PlaceholderAPI internal constructor() {
         private var processParameters = false
 
         private var built = false
-
-        var loader: Loader<T>? = null
-            set(value) {
-                field = assignIfNull(field, value)
-            }
-
-        var scopeClass: AnyScopeClass? = null
-            set(value) {
-                field = assignIfNull(field, value)
-            }
+        private var loader: Loader<T>? = null
+        private var scopeClass: AnyScopeClass? = null
 
         fun loader(loader: Loader<T>) {
             this.loader = loader
@@ -251,13 +243,13 @@ abstract class PlaceholderAPI internal constructor() {
             this.loader = loader as Loader<T>
         }
 
-        inline fun <ST, reified S : Scope<ST, S>> scopedLoader(noinline loader: ScopedLoader<ST, S, T>) {
-            scopeClass = S::class
+        fun <ST, S : Scope<ST, S>> scopedLoader(scope: S, loader: ScopedLoader<ST, S, T>) {
+            scopeClass = scope::class
             this.loader = loader as Loader<T>
         }
 
-        inline fun <ST, reified S : Scope<ST, S>> visitorScopedLoader(noinline loader: VisitorScopedLoader<ST, S, T>) {
-            scopeClass = S::class
+        fun <ST, S : Scope<ST, S>> visitorScopedLoader(scope: S, loader: VisitorScopedLoader<ST, S, T>) {
+            scopeClass = scope::class
             this.loader = loader as Loader<T>
         }
 
