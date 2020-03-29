@@ -84,27 +84,33 @@ interface Placeholder<T : Any> {
 
     fun updateOrExecute(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: AnyContext = scope.defaultContext, player: Player? = null, action: Runnable)
 
-    class VisitorEntry(
+    class VisitorEntry<T>(
             override val player: Player,
             parameters: PlaceholderParameters,
             context: AnyContext
-    ) : Entry(player, parameters, context)
+    ) : Entry<T>(player, parameters, context)
 
-    class VisitorScopedEntry<ST, S : Scope<ST, S>>(
+    class VisitorScopedEntry<T, ST, S : Scope<ST, S>>(
             override val player: Player,
             parameters: PlaceholderParameters,
             context: Scope<ST, S>.Context
-    ) : ScopedEntry<ST, S>(player, parameters, context)
+    ) : ScopedEntry<T, ST, S>(player, parameters, context)
 
-    open class ScopedEntry<ST, S : Scope<ST, S>>(
+    open class ScopedEntry<T, ST, S : Scope<ST, S>>(
             player: Player?,
             parameters: PlaceholderParameters,
             override val context: Scope<ST, S>.Context
-    ) : Entry(player, parameters, context)
+    ) : Entry<T>(player, parameters, context)
 
-    open class Entry(
+    open class Entry<T>(
             open val player: Player?,
             val parameters: PlaceholderParameters,
             open val context: AnyContext
-    )
+    ) {
+
+        @Suppress("UNCHECKED_CAST")
+        fun <ST, S : Scope<ST, S>> scoped(clazz: KClass<S>, loader: (Scope<ST, S>.Context) -> T): T? {
+            return loader(context as Scope<ST, S>.Context)
+        }
+    }
 }

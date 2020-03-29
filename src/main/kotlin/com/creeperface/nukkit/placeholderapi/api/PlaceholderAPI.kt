@@ -6,7 +6,6 @@ import com.creeperface.nukkit.placeholderapi.api.scope.GlobalScope
 import com.creeperface.nukkit.placeholderapi.api.scope.Scope
 import com.creeperface.nukkit.placeholderapi.api.util.*
 import java.util.*
-import java.util.function.BiFunction
 import java.util.function.Function
 import kotlin.reflect.KClass
 
@@ -121,132 +120,184 @@ abstract class PlaceholderAPI internal constructor() {
 
     fun getFormatter(clazz: Class<*>) = getFormatter(clazz.kotlin)
 
-    inline fun <reified T : Any> buildStatic(name: String, noinline loader: Loader<T>) = StaticBuilder(
-            name,
-            T::class,
-            loader = loader
-    )
+//    inline fun <reified T : Any> buildStatic(name: String, noinline loader: Loader<T>) = StaticBuilder(
+//            name,
+//            T::class,
+//            loader = loader
+//    )
+//
+//    fun <T : Any> buildStatic(typeClass: Class<T>, name: String, loader: Function<PlaceholderParameters, T?>) = StaticBuilder(
+//            name,
+//            typeClass.kotlin
+//    ) { loader.apply(parameters) }
+//
+//    inline fun <reified T : Any, ST, reified S : Scope<ST, S>> buildStaticScoped(name: String, noinline loader: ScopedLoader<ST, S, T>) = StaticBuilder(
+//            name,
+//            T::class,
+//            S::class,
+//            loader as Loader<T>
+//    )
+//
+//    fun <T : Any, ST, S : Scope<ST, S>> buildStaticScoped(typeClass: Class<T>, scopeClass: Class<S>, name: String, loader: BiFunction<PlaceholderParameters, Scope<ST, S>.Context, T?>) = StaticBuilder(
+//            name,
+//            typeClass.kotlin,
+//            scopeClass.kotlin
+//    ) { loader.apply(parameters, context as Scope<ST, S>.Context) }
+//
+//    inline fun <reified T : Any> buildVisitorSensitive(name: String, noinline loader: VisitorLoader<T>) = VisitorBuilder(
+//            name,
+//            T::class,
+//            loader = loader as Loader<T>
+//    )
+//
+//    fun <T : Any> buildVisitorSensitive(typeClass: Class<T>, name: String, loader: BiFunction<Player, PlaceholderParameters, T?>) = VisitorBuilder(
+//            name,
+//            typeClass.kotlin
+//    ) { loader.apply(player!!, parameters) }
+//
+//    inline fun <reified T : Any, ST, reified S : Scope<ST, S>> buildVisitorSensitiveScoped(name: String, noinline loader: VisitorScopedLoader<ST, S, T>) = VisitorBuilder(
+//            name,
+//            T::class,
+//            S::class,
+//            loader as Loader<T>
+//    )
+//
+//    fun <T : Any, ST, S : Scope<ST, S>> buildVisitorSensitiveScoped(typeClass: Class<T>, scopeClass: Class<S>, name: String, loader: TriFunction<Player, PlaceholderParameters, Scope<ST, S>.Context, T?>) = VisitorBuilder(
+//            name,
+//            typeClass.kotlin,
+//            scopeClass.kotlin
+//    ) { loader.apply(player!!, parameters, context as Scope<ST, S>.Context) }
+//
+//    class StaticBuilder<T : Any> constructor(
+//            name: String,
+//            typeClass: KClass<T>,
+//            scopeClass: AnyScopeClass = GlobalScope::class,
+//            private val loader: AnyValueEntry<T>.() -> T?
+//    ) : Builder<T, StaticBuilder<T>>(name, typeClass, scopeClass) {
+//
+//        override fun build() {
+//            getInstance().staticPlaceholder(
+//                    name,
+//                    typeClass,
+//                    loader,
+//                    updateInterval,
+//                    autoUpdate,
+//                    processParameters,
+//                    scopeClass,
+//                    *aliases
+//            )
+//        }
+//    }
+//
+//    class VisitorBuilder<T : Any> constructor(
+//            name: String,
+//            typeClass: KClass<T>,
+//            scopeClass: AnyScopeClass = GlobalScope::class,
+//            private val loader: AnyValueEntry<T>.() -> T?
+//    ) : Builder<T, VisitorBuilder<T>>(name, typeClass, scopeClass) {
+//
+//        override fun build() {
+//            getInstance().visitorSensitivePlaceholder(
+//                    name,
+//                    typeClass,
+//                    loader,
+//                    updateInterval,
+//                    autoUpdate,
+//                    processParameters,
+//                    scopeClass,
+//                    *aliases
+//            )
+//        }
+//
+//    }
 
-    fun <T : Any> buildStatic(typeClass: Class<T>, name: String, loader: Function<PlaceholderParameters, T?>) = StaticBuilder(
-            name,
-            typeClass.kotlin
-    ) { loader.apply(parameters) }
+    fun <T : Any> builder(name: String, typeClass: Class<T>) = Builder(name, typeClass.kotlin)
 
-    inline fun <reified T : Any, ST, reified S : Scope<ST, S>> buildStaticScoped(name: String, noinline loader: ScopedLoader<ST, S, T>) = StaticBuilder(
-            name,
-            T::class,
-            S::class,
-            loader as Loader<T>
-    )
-
-    fun <T : Any, ST, S : Scope<ST, S>> buildStaticScoped(typeClass: Class<T>, scopeClass: Class<S>, name: String, loader: BiFunction<PlaceholderParameters, Scope<ST, S>.Context, T?>) = StaticBuilder(
-            name,
-            typeClass.kotlin,
-            scopeClass.kotlin
-    ) { loader.apply(parameters, context as Scope<ST, S>.Context) }
-
-    inline fun <reified T : Any> buildVisitorSensitive(name: String, noinline loader: VisitorLoader<T>) = VisitorBuilder(
-            name,
-            T::class,
-            loader = loader as Loader<T>
-    )
-
-    fun <T : Any> buildVisitorSensitive(typeClass: Class<T>, name: String, loader: BiFunction<Player, PlaceholderParameters, T?>) = VisitorBuilder(
-            name,
-            typeClass.kotlin
-    ) { loader.apply(player!!, parameters) }
-
-    inline fun <reified T : Any, ST, reified S : Scope<ST, S>> buildVisitorSensitiveScoped(name: String, noinline loader: VisitorScopedLoader<ST, S, T>) = VisitorBuilder(
-            name,
-            T::class,
-            S::class,
-            loader as Loader<T>
-    )
-
-    fun <T : Any, ST, S : Scope<ST, S>> buildVisitorSensitiveScoped(typeClass: Class<T>, scopeClass: Class<S>, name: String, loader: TriFunction<Player, PlaceholderParameters, Scope<ST, S>.Context, T?>) = VisitorBuilder(
-            name,
-            typeClass.kotlin,
-            scopeClass.kotlin
-    ) { loader.apply(player!!, parameters, context as Scope<ST, S>.Context) }
-
-    class StaticBuilder<T : Any> constructor(
-            name: String,
-            typeClass: KClass<T>,
-            scopeClass: AnyScopeClass = GlobalScope::class,
-            private val loader: AnyValueEntry.() -> T?
-    ) : Builder<T, StaticBuilder<T>>(name, typeClass, scopeClass) {
-
-        override fun build() {
-            getInstance().staticPlaceholder(
-                    name,
-                    typeClass,
-                    loader,
-                    updateInterval,
-                    autoUpdate,
-                    processParameters,
-                    scopeClass,
-                    *aliases
-            )
+    inline fun <reified T : Any> build(name: String, builder: Builder<T>.() -> Unit) {
+        Builder(name, T::class).let {
+            builder(it)
+            it.build()
         }
-    }
-
-    class VisitorBuilder<T : Any> constructor(
-            name: String,
-            typeClass: KClass<T>,
-            scopeClass: AnyScopeClass = GlobalScope::class,
-            private val loader: AnyValueEntry.() -> T?
-    ) : Builder<T, VisitorBuilder<T>>(name, typeClass, scopeClass) {
-
-        override fun build() {
-            getInstance().visitorSensitivePlaceholder(
-                    name,
-                    typeClass,
-                    loader,
-                    updateInterval,
-                    autoUpdate,
-                    processParameters,
-                    scopeClass,
-                    *aliases
-            )
-        }
-
     }
 
     @Suppress("UNCHECKED_CAST")
-    abstract class Builder<T : Any, B : Builder<T, B>> internal constructor(
-            val name: String,
-            val typeClass: KClass<T>,
-            val scopeClass: AnyScopeClass
+    class Builder<T : Any> constructor(
+            private val name: String,
+            private val typeClass: KClass<T>
     ) {
 
-        private val self by lazy { this as B }
+        private var updateInterval = -1
+        private var autoUpdate = false
+        private var aliases = emptyArray<String>()
+        private var processParameters = false
 
-        protected var updateInterval = -1
-        protected var autoUpdate = false
-        protected var aliases = emptyArray<String>()
-        protected var processParameters = false
+        private var built = false
 
-        fun updateInterval(updateInterval: Int): B {
+        var loader: Loader<T>? = null
+            set(value) {
+                field = assignIfNull(field, value)
+            }
+
+        var scopeClass: AnyScopeClass? = null
+            set(value) {
+                field = assignIfNull(field, value)
+            }
+
+        fun loader(loader: Loader<T>) {
+            this.loader = loader
+        }
+
+        fun visitorLoader(loader: VisitorLoader<T>) {
+            this.loader = loader as Loader<T>
+        }
+
+        inline fun <ST, reified S : Scope<ST, S>> scopedLoader(noinline loader: ScopedLoader<ST, S, T>) {
+            scopeClass = S::class
+            this.loader = loader as Loader<T>
+        }
+
+        inline fun <ST, reified S : Scope<ST, S>> visitorScopedLoader(noinline loader: VisitorScopedLoader<ST, S, T>) {
+            scopeClass = S::class
+            this.loader = loader as Loader<T>
+        }
+
+        fun updateInterval(updateInterval: Int): Builder<T> {
             this.updateInterval = updateInterval
-            return self
+            return this
         }
 
-        fun autoUpdate(autoUpdate: Boolean): B {
+        fun autoUpdate(autoUpdate: Boolean): Builder<T> {
             this.autoUpdate = autoUpdate
-            return self
+            return this
         }
 
-        fun aliases(vararg aliases: String): B {
+        fun aliases(vararg aliases: String): Builder<T> {
             this.aliases = arrayOf(*aliases)
-            return self
+            return this
         }
 
-        fun processParameters(processParameters: Boolean): B {
+        fun processParameters(processParameters: Boolean): Builder<T> {
             this.processParameters = processParameters
-            return self
+            return this
         }
 
-        abstract fun build()
+        fun build() {
+            if (built) {
+                return
+            }
+            built = true
+
+            getInstance().visitorSensitivePlaceholder(
+                    name,
+                    typeClass,
+                    loader ?: error("You must set placeholder loader before building"),
+                    updateInterval,
+                    autoUpdate,
+                    processParameters,
+                    scopeClass ?: GlobalScope::class,
+                    *aliases
+            )
+        }
     }
 
     companion object {

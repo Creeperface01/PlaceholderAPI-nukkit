@@ -1,3 +1,5 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package com.creeperface.nukkit.placeholderapi.api.util
 
 import com.creeperface.nukkit.placeholderapi.api.Placeholder
@@ -16,18 +18,22 @@ typealias AnyScopeClass = KClass<out Scope<out Any?, *>>
 
 typealias AnyContext = Scope<out Any?, *>.Context
 typealias AnyPlaceholder = Placeholder<out Any>
-typealias ValueEntry<ST, S> = Placeholder.ScopedEntry<ST, S>
-typealias AnyValueEntry = Placeholder.Entry
-typealias VisitorValueEntry<ST, S> = Placeholder.VisitorScopedEntry<ST, S>
-typealias AnyVisitorValueEntry = Placeholder.VisitorEntry
+typealias ValueEntry<T, ST, S> = Placeholder.ScopedEntry<T, ST, S>
+typealias AnyValueEntry<T> = Placeholder.Entry<T>
+typealias VisitorValueEntry<T, ST, S> = Placeholder.VisitorScopedEntry<T, ST, S>
+typealias AnyVisitorValueEntry<T> = Placeholder.VisitorEntry<T>
 
-typealias Loader<T> = AnyValueEntry.() -> T?
-typealias VisitorLoader<T> = AnyVisitorValueEntry.() -> T?
-typealias ScopedLoader<ST, S, T> = ValueEntry<ST, S>.(Any?) -> T?
-typealias VisitorScopedLoader<ST, S, T> = VisitorValueEntry<ST, S>.(Any?) -> T?
+typealias Loader<T> = AnyValueEntry<T>.() -> T?
+typealias VisitorLoader<T> = AnyVisitorValueEntry<T>.() -> T?
+typealias ScopedLoader<ST, S, T> = ValueEntry<T, ST, S>.(Any?) -> T?
+typealias VisitorScopedLoader<ST, S, T> = VisitorValueEntry<T, ST, S>.(Any?) -> T?
 
 typealias PlaceholderGroup = MutableMap<String, AnyPlaceholder>
 
 fun String.matchPlaceholders() = Parser.parse(this)
 
 data class MatchedGroup(val raw: String, val value: String, val start: Int, val end: Int, val params: PlaceholderParameters = PlaceholderParameters.EMPTY)
+
+inline fun <T> assignIfNull(value: T?, newValue: T?): T? {
+    return value ?: newValue
+}
