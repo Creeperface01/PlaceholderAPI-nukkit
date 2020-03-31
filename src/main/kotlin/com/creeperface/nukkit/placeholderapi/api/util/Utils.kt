@@ -2,8 +2,11 @@
 
 package com.creeperface.nukkit.placeholderapi.api.util
 
+import cn.nukkit.Player
 import com.creeperface.nukkit.placeholderapi.api.Placeholder
+import com.creeperface.nukkit.placeholderapi.api.PlaceholderAPI
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
+import com.creeperface.nukkit.placeholderapi.api.scope.GlobalScope
 import com.creeperface.nukkit.placeholderapi.api.scope.Scope
 import com.creeperface.nukkit.placeholderapi.util.Parser
 import kotlin.reflect.KClass
@@ -37,3 +40,8 @@ data class MatchedGroup(val raw: String, val value: String, val start: Int, val 
 inline fun <T> assignIfNull(value: T?, newValue: T?): T? {
     return value ?: newValue
 }
+
+fun String.translatePlaceholders(
+        visitor: Player? = null,
+        context: AnyContext = GlobalScope.defaultContext
+) = PlaceholderAPI.getInstance().translateString(this)

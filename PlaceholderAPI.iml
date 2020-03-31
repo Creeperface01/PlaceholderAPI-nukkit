@@ -3,9 +3,9 @@
   <component name="AutoImportedSourceRoots">
     <option name="directories">
       <list>
-        <option value="$MODULE_DIR$/src/main/java" />
-        <option value="$MODULE_DIR$/src/main/kotlin" />
-        <option value="$MODULE_DIR$/src/test" />
+        <option value="D:\IdeaProjects\PlaceholderAPI-nukkit/src/main/java" />
+        <option value="D:\IdeaProjects\PlaceholderAPI-nukkit/src/main/kotlin" />
+        <option value="D:\IdeaProjects\PlaceholderAPI-nukkit/src/test" />
       </list>
     </option>
   </component>
@@ -51,6 +51,7 @@
         <option name="remotingEnabled" value="false" />
         <option name="secure" value="true" />
         <option name="url" />
+        <option name="useRelativePathsInXml" value="false" />
         <option name="xmlDir" />
       </configuration>
     </facet>
@@ -63,7 +64,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/kotlin" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/test" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
