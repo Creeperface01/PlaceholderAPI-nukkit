@@ -17,6 +17,11 @@ abstract class Scope<T, S : Scope<T, S>> {
 
     open fun hasDefaultContext() = false
 
+    init {
+        //calculate weight
+
+    }
+
     @Suppress("UNCHECKED_CAST")
     @JvmOverloads
     open fun getContext(context: T, parentContext: AnyContext? = null): Context {

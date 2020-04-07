@@ -1,23 +1,21 @@
 package com.creeperface.nukkit.placeholderapi
 
-import cn.nukkit.AdventureSettings.Type
-import cn.nukkit.Nukkit
 import cn.nukkit.Player
-import cn.nukkit.Server
 import cn.nukkit.block.Block
-import cn.nukkit.entity.Entity
 import cn.nukkit.item.Item
 import cn.nukkit.plugin.Plugin
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderAPIInitializeEvent
 import com.creeperface.nukkit.placeholderapi.api.scope.GlobalScope
+import com.creeperface.nukkit.placeholderapi.api.scope.registerDefaultPlaceholders
 import com.creeperface.nukkit.placeholderapi.api.util.*
 import com.creeperface.nukkit.placeholderapi.command.PlaceholderCommand
 import com.creeperface.nukkit.placeholderapi.placeholder.StaticPlaceHolder
 import com.creeperface.nukkit.placeholderapi.placeholder.VisitorSensitivePlaceholder
-import com.creeperface.nukkit.placeholderapi.util.*
+import com.creeperface.nukkit.placeholderapi.util.formatAsTime
+import com.creeperface.nukkit.placeholderapi.util.nestedSuperClass
+import com.creeperface.nukkit.placeholderapi.util.toFormatString
 import com.google.common.base.Preconditions
-import java.time.Duration
 import java.util.*
 import kotlin.jvm.internal.Ref
 import kotlin.reflect.KClass
@@ -69,7 +67,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
     }
 
     internal fun init() {
-        registerDefaultPlaceholders()
+        registerDefaultPlaceholders(this)
 
         this.server.scheduler.scheduleRepeatingTask(this, { updatePlaceholders() }, configuration.updateInterval)
 
@@ -150,11 +148,12 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
         }
     }
 
-    override fun getValue(key: String, visitor: Player?, defaultValue: String?, params: PlaceholderParameters, context: AnyContext): String? {
+    @Suppress("UNCHECKED_CAST")
+    override fun getValue(key: String, visitor: Player?, defaultValue: String?, params: PlaceholderParameters, vararg contexts: AnyContext): String? {
         val ref = Ref.ObjectRef<AnyContext>()
 
         //TODO: placeholder as a parameter (calculate nested placeholders)
-        getPlaceholder(key, context, ref)?.let {
+        getPlaceholder(key, contexts as Array<AnyContext>, ref)?.let {
             return it.getValue(params, ref.element, visitor)
         }
 
@@ -162,13 +161,13 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
     }
 
 
-    override fun translateString(input: String, visitor: Player?, context: AnyContext, matched: Collection<MatchedGroup>): String {
+    override fun translateString(input: String, visitor: Player?, matched: Collection<MatchedGroup>, vararg contexts: AnyContext): String {
         val builder = StringBuilder(input)
 
         var lengthDiff = 0
 
         matched.forEach { group ->
-            val replacement = getValue(group.value, visitor, null, group.params, context)
+            val replacement = getValue(group.value, visitor, null, group.params, *contexts)
 
             replacement?.run {
                 builder.replace(lengthDiff + group.start, lengthDiff + group.end, replacement)
@@ -191,24 +190,28 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
         return result
     }
 
-    private fun getPlaceholder(key: String, context: AnyContext, placeholderContext: Ref.ObjectRef<AnyContext>): AnyPlaceholder? {
-        if (context.scope.global) {
-            placeholderContext.element = GlobalScope.defaultContext
-            return globalPlaceholders[key]
-        }
+    private fun getPlaceholder(key: String, contexts: Array<AnyContext>, placeholderContext: Ref.ObjectRef<AnyContext>): AnyPlaceholder? {
+        if (contexts.size > 1 || !contexts[0].scope.global) {
+            contexts@ for (context in contexts) {
+                var current = context
 
-        var current = context
+                while (true) {
+                    scopePlaceholders[current.scope::class]?.get(key)?.let {
+                        placeholderContext.element = current
+                        return it
+                    }
 
-        while (true) {
-            scopePlaceholders[current.scope::class]?.get(key)?.let {
-                placeholderContext.element = current
-                return it
+                    current = current.parentContext ?: break
+
+                    if (current.scope === GlobalScope) {
+                        continue@contexts
+                    }
+                }
             }
-
-            current = current.parentContext ?: break
         }
 
-        return null
+        placeholderContext.element = GlobalScope.defaultContext
+        return globalPlaceholders[key]
     }
 
     override fun getPlaceholder(key: String, scope: AnyScope): AnyPlaceholder? {
@@ -313,150 +316,5 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
         registerFormatter(Player::class) { it.name }
         registerFormatter(Item::class) { it.name }
         registerFormatter(Block::class) { it.name }
-    }
-
-    private fun registerDefaultPlaceholders() {
-        build<String>("player") {
-            visitorLoader { player.name }
-            aliases("playername")
-        }
-
-        build<String>("player_displayname") {
-            visitorLoader { player.displayName }
-        }
-
-        build<UUID>("player_uuid") {
-            visitorLoader { player.uniqueId }
-        }
-        build<Int>("player_ping") {
-            visitorLoader { player.ping }
-        }
-        build<String>("player_level") {
-            visitorLoader { player.level?.name }
-        }
-        build<Boolean>("player_can_fly") {
-            visitorLoader { player.adventureSettings.get(Type.ALLOW_FLIGHT) }
-        }
-        build<Boolean>("player_flying") {
-            visitorLoader { player.adventureSettings.get(Type.FLYING) }
-        }
-
-        build<Float>("player_health") {
-            visitorLoader { player.health }
-        }
-        build<Int>("player_max_health") {
-            visitorLoader { player.maxHealth }
-        }
-        build<Float>("player_saturation") {
-            visitorLoader { player.foodData.foodSaturationLevel }
-        }
-        build<Int>("player_food") {
-            visitorLoader { player.foodData.level }
-        }
-        build<String>("player_gamemode") {
-            visitorLoader { Server.getGamemodeString(player.gamemode) }
-        }
-
-        build<Double>("player_x") {
-            visitorLoader { player.x }
-        }
-        build<Double>("player_y") {
-            visitorLoader { player.y }
-        }
-        build<Double>("player_z") {
-            visitorLoader { player.z }
-        }
-        build<String>("player_direction") {
-            visitorLoader { player.direction.name }
-        }
-        build<Int>("player_exp") {
-            visitorLoader { player.experience }
-        }
-
-        build<Int>("player_exp_to_next") {
-            visitorLoader { Player.calculateRequireExperience(player.experienceLevel + 1) }
-        }
-        build<Int>("player_exp_level") {
-            visitorLoader { player.experienceLevel }
-        }
-        build<Float>("player_speed") {
-            visitorLoader { player.movementSpeed }
-        }
-        build<Int>("player_max_air") {
-            visitorLoader { player.getDataPropertyInt(Entity.DATA_MAX_AIR) }
-        }
-        build<Int>("player_remaining_air") {
-            visitorLoader { player.getDataPropertyInt(Entity.DATA_AIR) }
-        }
-        build<String>("player_item_in_hand") {
-            visitorLoader { player.inventory?.itemInHand?.name }
-        }
-
-        val server = this.server
-        val runtime = Runtime.getRuntime()
-
-        build<Int>("server_online") {
-            loader {
-                server.onlinePlayers.size
-            }
-        }
-
-        build<Int>("server_max_players") {
-            loader {
-                server.maxPlayers
-            }
-        }
-
-        build<String>("server_motd") {
-            loader {
-                server.network.name
-            }
-        }
-
-        build<Double>("server_ram_used") {
-            loader {
-                (runtime.totalMemory() - runtime.freeMemory()).bytes2MB().round(configuration.coordsAccuracy)
-            }
-        }
-
-        build<Double>("server_ram_free") {
-            loader {
-                runtime.freeMemory().bytes2MB().round(configuration.coordsAccuracy)
-            }
-        }
-
-        build<Double>("server_ram_total") {
-            loader {
-                runtime.totalMemory().bytes2MB().round(configuration.coordsAccuracy)
-            }
-        }
-
-        build<Double>("server_ram_max") {
-            loader {
-                runtime.maxMemory().bytes2MB().round(configuration.coordsAccuracy)
-            }
-        }
-
-        build<Int>("server_cores") {
-            loader {
-                runtime.availableProcessors()
-            }
-        }
-
-        build<Float>("server_tps") {
-            loader {
-                server.ticksPerSecondAverage
-            }
-        }
-
-        build<Duration>("server_uptime") {
-            loader {
-                Duration.ofMillis(System.currentTimeMillis() - Nukkit.START_TIME)
-            }
-        }
-
-        build<Date>("time") {
-            loader { Date() }
-        }
     }
 }

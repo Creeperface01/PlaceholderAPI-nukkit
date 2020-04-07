@@ -2,6 +2,8 @@ package com.creeperface.nukkit.placeholderapi.api
 
 import cn.nukkit.Player
 import com.creeperface.nukkit.placeholderapi.PlaceholderAPIIml
+import com.creeperface.nukkit.placeholderapi.api.Placeholder.VisitorEntry
+import com.creeperface.nukkit.placeholderapi.api.Placeholder.VisitorScopedEntry
 import com.creeperface.nukkit.placeholderapi.api.scope.GlobalScope
 import com.creeperface.nukkit.placeholderapi.api.scope.Scope
 import com.creeperface.nukkit.placeholderapi.api.util.*
@@ -71,7 +73,7 @@ abstract class PlaceholderAPI internal constructor() {
             visitor: Player? = null,
             defaultValue: String? = key,
             params: PlaceholderParameters = PlaceholderParameters.EMPTY,
-            context: AnyContext = GlobalScope.defaultContext
+            vararg contexts: AnyContext = arrayOf(GlobalScope.defaultContext)
     ): String?
 
     fun updatePlaceholder(key: String) = updatePlaceholder(key, null)
@@ -85,15 +87,15 @@ abstract class PlaceholderAPI internal constructor() {
     fun translateString(
             input: String,
             visitor: Player? = null
-    ) = translateString(input, visitor, GlobalScope.defaultContext, input.matchPlaceholders())
+    ) = translateString(input, visitor, input.matchPlaceholders(), GlobalScope.defaultContext)
 
     fun translateString(
             input: String,
             visitor: Player? = null,
-            context: AnyContext = GlobalScope.defaultContext
-    ) = translateString(input, visitor, context, input.matchPlaceholders())
+            vararg contexts: AnyContext = arrayOf(GlobalScope.defaultContext)
+    ) = translateString(input, visitor, input.matchPlaceholders(), *contexts)
 
-    abstract fun translateString(input: String, visitor: Player?, context: AnyContext, matched: Collection<MatchedGroup>): String
+    abstract fun translateString(input: String, visitor: Player?, matched: Collection<MatchedGroup>, vararg contexts: AnyContext): String
 
     fun findPlaceholders(input: String, scope: AnyScope = GlobalScope) = findPlaceholders(input.matchPlaceholders(), scope)
 
@@ -239,18 +241,18 @@ abstract class PlaceholderAPI internal constructor() {
             this.loader = loader
         }
 
-        fun visitorLoader(loader: VisitorLoader<T>) {
-            this.loader = loader as Loader<T>
+        fun visitorLoader(loader0: VisitorLoader<T>) {
+            this.loader = { loader0(this as VisitorEntry<T>) }
         }
 
-        fun <ST, S : Scope<ST, S>> scopedLoader(scope: S, loader: ScopedLoader<ST, S, T>) {
+        fun <ST, S : Scope<ST, S>> scopedLoader(scope: S, loader0: ScopedLoader<ST, S, T>) {
             scopeClass = scope::class
-            this.loader = loader as Loader<T>
+            this.loader = { loader0(this as ValueEntry<T, ST, S>, null) }
         }
 
-        fun <ST, S : Scope<ST, S>> visitorScopedLoader(scope: S, loader: VisitorScopedLoader<ST, S, T>) {
+        fun <ST, S : Scope<ST, S>> visitorScopedLoader(scope: S, loader0: VisitorScopedLoader<ST, S, T>) {
             scopeClass = scope::class
-            this.loader = loader as Loader<T>
+            this.loader = { loader0(this as VisitorScopedEntry<T, ST, S>, null) }
         }
 
         fun updateInterval(updateInterval: Int): Builder<T> {

@@ -43,5 +43,5 @@ inline fun <T> assignIfNull(value: T?, newValue: T?): T? {
 
 fun String.translatePlaceholders(
         visitor: Player? = null,
-        context: AnyContext = GlobalScope.defaultContext
-) = PlaceholderAPI.getInstance().translateString(this)
+        vararg contexts: AnyContext = arrayOf(GlobalScope.defaultContext)
+) = PlaceholderAPI.getInstance().translateString(this, visitor, *contexts)
