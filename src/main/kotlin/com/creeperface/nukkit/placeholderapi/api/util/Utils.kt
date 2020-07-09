@@ -21,10 +21,10 @@ typealias AnyScopeClass = KClass<out Scope<out Any?, *>>
 
 typealias AnyContext = Scope<out Any?, *>.Context
 typealias AnyPlaceholder = Placeholder<out Any>
-typealias ValueEntry<T, ST, S> = Placeholder.ScopedEntry<T, ST, S>
-typealias AnyValueEntry<T> = Placeholder.Entry<T>
-typealias VisitorValueEntry<T, ST, S> = Placeholder.VisitorScopedEntry<T, ST, S>
-typealias AnyVisitorValueEntry<T> = Placeholder.VisitorEntry<T>
+typealias ValueEntry<T, ST, S> = Placeholder.Entry<T, ST, S>
+typealias AnyValueEntry<T> = Placeholder.Entry<T, *, *>
+typealias VisitorValueEntry<T, ST, S> = Placeholder.VisitorEntry<T, ST, S>
+typealias AnyVisitorValueEntry<T> = Placeholder.VisitorEntry<T, *, *>
 
 typealias Loader<T> = AnyValueEntry<T>.() -> T?
 typealias VisitorLoader<T> = AnyVisitorValueEntry<T>.() -> T?

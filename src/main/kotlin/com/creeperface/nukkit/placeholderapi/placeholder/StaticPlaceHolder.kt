@@ -31,7 +31,7 @@ open class StaticPlaceHolder<T : Any>(
 ) {
 
     override fun loadValue(parameters: PlaceholderParameters, context: AnyContext, player: Player?): T? {
-        return loader(AnyValueEntry(null, parameters, context))
+        return loader(ValueEntry(null, parameters, context))
     }
 
     override fun forceUpdate(parameters: PlaceholderParameters, context: AnyContext, player: Player?): String {

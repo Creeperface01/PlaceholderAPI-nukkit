@@ -3,7 +3,6 @@ package com.creeperface.nukkit.placeholderapi.api
 import cn.nukkit.Player
 import com.creeperface.nukkit.placeholderapi.PlaceholderAPIIml
 import com.creeperface.nukkit.placeholderapi.api.Placeholder.VisitorEntry
-import com.creeperface.nukkit.placeholderapi.api.Placeholder.VisitorScopedEntry
 import com.creeperface.nukkit.placeholderapi.api.scope.GlobalScope
 import com.creeperface.nukkit.placeholderapi.api.scope.Scope
 import com.creeperface.nukkit.placeholderapi.api.util.*
@@ -242,7 +241,7 @@ abstract class PlaceholderAPI internal constructor() {
         }
 
         fun visitorLoader(loader0: VisitorLoader<T>) {
-            this.loader = { loader0(this as VisitorEntry<T>) }
+            this.loader = { loader0(this as AnyVisitorValueEntry<T>) }
         }
 
         fun <ST, S : Scope<ST, S>> scopedLoader(scope: S, loader0: ScopedLoader<ST, S, T>) {
@@ -252,7 +251,7 @@ abstract class PlaceholderAPI internal constructor() {
 
         fun <ST, S : Scope<ST, S>> visitorScopedLoader(scope: S, loader0: VisitorScopedLoader<ST, S, T>) {
             scopeClass = scope::class
-            this.loader = { loader0(this as VisitorScopedEntry<T, ST, S>, null) }
+            this.loader = { loader0(this as VisitorEntry<T, ST, S>, null) }
         }
 
         fun updateInterval(updateInterval: Int): Builder<T> {

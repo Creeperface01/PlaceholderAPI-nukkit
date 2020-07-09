@@ -89,7 +89,7 @@ open class VisitorSensitivePlaceholder<T : Any>(
     }
 
     override fun loadValue(parameters: PlaceholderParameters, context: AnyContext, player: Player?) =
-            if (player != null) loader(AnyValueEntry(player, parameters, context)) else null
+            if (player != null) loader(AnyVisitorValueEntry(player, parameters, context)) else null
 
     override fun forceUpdate(parameters: PlaceholderParameters, context: AnyContext, player: Player?): String {
         if (player == null)
