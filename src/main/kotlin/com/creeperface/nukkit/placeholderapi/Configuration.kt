@@ -22,10 +22,10 @@ class Configuration(plugin: Plugin) : SimpleConfig(plugin) {
     @Path("coordinates_accuracy")
     var coordsAccuracy = 2
 
-    @Path("boolean_format.false")
+    @Path("boolean_format.false_format")
     var booleanFalseFormat = "no"
 
-    @Path("boolean_format.true")
+    @Path("boolean_format.true_format")
     var booleanTrueFormat = "yes"
 
     @Path("array_format")

@@ -14,8 +14,8 @@ date_format: "yyyy-MM-dd"
 time_format: "HH:mm:ss"
 
 boolean_format:
-  true: "yes"
-  false: "no"
+  true_format: "yes"
+  false_format: "no"
 
 #separator to format arrays. So list of players will be formatted like "player1, player2, player3"
 array_format: ", "
