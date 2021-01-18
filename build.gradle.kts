@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "com.creeperface.nukkit.placeholderapi"
-version = "1.0-SNAPSHOT"
+version = "1.4-SNAPSHOT"
 
 repositories {
     mavenCentral()
