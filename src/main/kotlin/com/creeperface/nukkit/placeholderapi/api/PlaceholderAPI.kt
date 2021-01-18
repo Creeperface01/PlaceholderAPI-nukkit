@@ -235,23 +235,28 @@ abstract class PlaceholderAPI internal constructor() {
         private var built = false
         private var loader: Loader<T>? = null
         private var scopeClass: AnyScopeClass? = null
+        private var visitor = false
 
         fun loader(loader: Loader<T>) {
             this.loader = loader
+            visitor = false
         }
 
         fun visitorLoader(loader0: VisitorLoader<T>) {
             this.loader = { loader0(this as AnyVisitorValueEntry<T>) }
+            visitor = true
         }
 
         fun <ST, S : Scope<ST, S>> scopedLoader(scope: S, loader0: ScopedLoader<ST, S, T>) {
             scopeClass = scope::class
             this.loader = { loader0(this as ValueEntry<T, ST, S>, null) }
+            visitor = false
         }
 
         fun <ST, S : Scope<ST, S>> visitorScopedLoader(scope: S, loader0: VisitorScopedLoader<ST, S, T>) {
             scopeClass = scope::class
             this.loader = { loader0(this as VisitorEntry<T, ST, S>, null) }
+            visitor = true
         }
 
         fun updateInterval(updateInterval: Int): Builder<T> {
@@ -280,7 +285,8 @@ abstract class PlaceholderAPI internal constructor() {
             }
             built = true
 
-            getInstance().visitorSensitivePlaceholder(
+            if (visitor) {
+                getInstance().visitorSensitivePlaceholder(
                     name,
                     typeClass,
                     loader ?: error("You must set placeholder loader before building"),
@@ -289,7 +295,19 @@ abstract class PlaceholderAPI internal constructor() {
                     processParameters,
                     scopeClass ?: GlobalScope::class,
                     *aliases
-            )
+                )
+            } else {
+                getInstance().staticPlaceholder(
+                    name,
+                    typeClass,
+                    loader ?: error("You must set placeholder loader before building"),
+                    updateInterval,
+                    autoUpdate,
+                    processParameters,
+                    scopeClass ?: GlobalScope::class,
+                    *aliases
+                )
+            }
         }
     }
 

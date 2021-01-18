@@ -8,6 +8,7 @@ import com.creeperface.nukkit.placeholderapi.api.Placeholder
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderParameters
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderChangeListener
 import com.creeperface.nukkit.placeholderapi.api.event.PlaceholderUpdateEvent
+import com.creeperface.nukkit.placeholderapi.api.scope.GlobalScope
 import com.creeperface.nukkit.placeholderapi.api.util.*
 import java.util.*
 import kotlin.reflect.KClass
@@ -19,15 +20,15 @@ import kotlin.reflect.jvm.isAccessible
  * @author CreeperFace
  */
 abstract class BasePlaceholder<T : Any>(
-        override val name: String,
-        override val updateInterval: Int,
-        override val autoUpdate: Boolean,
-        override val aliases: Set<String>,
-        override val processParameters: Boolean,
-        scope: AnyScopeClass,
-        override val returnType: KClass<T>,
-        override val formatter: PFormatter,
-        protected open val loader: Loader<T>
+    override val name: String,
+    override val updateInterval: Int,
+    override val autoUpdate: Boolean,
+    override val aliases: Set<String>,
+    override val processParameters: Boolean,
+    scope: AnyScopeClass,
+    override val returnType: KClass<T>,
+    override val formatter: PFormatter,
+    protected open val loader: Loader<T>
 ) : Placeholder<T> {
 
     protected val changeListeners = mutableMapOf<Plugin, PlaceholderChangeListener<T>>()
@@ -72,7 +73,12 @@ abstract class BasePlaceholder<T : Any>(
         return value
     }
 
-    override fun updateOrExecute(parameters: PlaceholderParameters, context: AnyContext, player: Player?, action: Runnable) {
+    override fun updateOrExecute(
+        parameters: PlaceholderParameters,
+        context: AnyContext,
+        player: Player?,
+        action: Runnable
+    ) {
         var updated = false
 
         if (value == null || readyToUpdate()) {
@@ -89,7 +95,12 @@ abstract class BasePlaceholder<T : Any>(
     protected fun safeValue() = value?.let { formatter(it) } ?: name
 
     @JvmOverloads
-    protected fun checkForUpdate(parameters: PlaceholderParameters = PlaceholderParameters.EMPTY, context: AnyContext = scope.defaultContext, player: Player? = null, force: Boolean = false): Boolean {
+    protected fun checkForUpdate(
+        parameters: PlaceholderParameters = PlaceholderParameters.EMPTY,
+        context: AnyContext = scope.defaultContext,
+        player: Player? = null,
+        force: Boolean = false
+    ): Boolean {
         if (!force && !readyToUpdate()) {
             return false
         }
@@ -127,7 +138,8 @@ abstract class BasePlaceholder<T : Any>(
 
     override fun removeListener(plugin: Plugin) = changeListeners.remove(plugin)
 
-    protected open fun readyToUpdate() = updateInterval == -1 || (updateInterval >= 0 && (value == null || updateInterval == 0 || System.currentTimeMillis() - lastUpdate > intervalMillis()))
+    protected open fun readyToUpdate() =
+        updateInterval == -1 || scope != GlobalScope || (updateInterval >= 0 && (value == null || updateInterval == 0 || System.currentTimeMillis() - lastUpdate > intervalMillis()))
 
     fun intervalMillis() = updateInterval * 50
 }
