@@ -6,6 +6,7 @@ val junitVersion = "4.12"
 
 plugins {
     kotlin("jvm") version "1.4.21"
+    id("org.jetbrains.dokka") version "1.4.20"
 }
 
 group = "com.creeperface.nukkit.placeholderapi"
@@ -13,6 +14,7 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    jcenter()
     maven("https://repo.opencollab.dev/maven-snapshots/")
     maven("https://repo.opencollab.dev/maven-releases/")
 }
@@ -32,6 +34,8 @@ dependencies {
     compileOnly(kotlin("reflect", kotlinVersion))
     compileOnly("cn.nukkit:nukkit:1.0-SNAPSHOT")
     compileOnly("org.projectlombok:lombok:$lombokVersion")
+
+    dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.4.20")
 
     annotationProcessor("org.projectlombok:lombok:$lombokVersion")
 
