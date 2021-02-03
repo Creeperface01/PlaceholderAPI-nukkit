@@ -31,29 +31,26 @@
 
     <repositories>
         <repository>
-            <id>nukkitx-repo</id>
-            <url>http://repo.nukkitx.com/main/</url>
-        </repository>
-        <repository>
-            <id>bintray.kotlin.eap</id>
-            <name>Bintray Kotlin EAP Repository</name>
-            <url>https://dl.bintray.com/kotlin/kotlin-eap</url>
-        </repository>
-    </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
+            <id>opencollab-repo-release</id>
+            <url>https://repo.opencollab.dev/maven-releases/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
-            <id>bintray.kotlin.eap</id>
-            <name>Bintray Kotlin EAP Repository</name>
-            <url>https://dl.bintray.com/kotlin/kotlin-eap</url>
-        </pluginRepository>
-    </pluginRepositories>
+        </repository>
+        <repository>
+            <id>opencollab-repo-snapshot</id>
+            <url>https://repo.opencollab.dev/maven-snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <build>
         <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>

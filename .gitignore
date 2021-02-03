@@ -1,4 +1,3 @@
-
 ### Windows template
 # Windows thumbnail cache files
 Thumbs.db
@@ -125,3 +124,4 @@ hs_err_pid*
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 /src/test/
+.idea

@@ -237,26 +237,34 @@ abstract class PlaceholderAPI internal constructor() {
         private var scopeClass: AnyScopeClass? = null
         private var visitor = false
 
-        fun loader(loader: Loader<T>) {
+        fun loader(loader: Loader<T>): Builder<T> {
             this.loader = loader
             visitor = false
+
+            return this
         }
 
-        fun visitorLoader(loader0: VisitorLoader<T>) {
+        fun visitorLoader(loader0: VisitorLoader<T>): Builder<T> {
             this.loader = { loader0(this as AnyVisitorValueEntry<T>) }
             visitor = true
+
+            return this
         }
 
-        fun <ST, S : Scope<ST, S>> scopedLoader(scope: S, loader0: ScopedLoader<ST, S, T>) {
+        fun <ST, S : Scope<ST, S>> scopedLoader(scope: S, loader0: ScopedLoader<ST, S, T>): Builder<T> {
             scopeClass = scope::class
             this.loader = { loader0(this as ValueEntry<T, ST, S>, null) }
             visitor = false
+
+            return this
         }
 
-        fun <ST, S : Scope<ST, S>> visitorScopedLoader(scope: S, loader0: VisitorScopedLoader<ST, S, T>) {
+        fun <ST, S : Scope<ST, S>> visitorScopedLoader(scope: S, loader0: VisitorScopedLoader<ST, S, T>): Builder<T> {
             scopeClass = scope::class
             this.loader = { loader0(this as VisitorEntry<T, ST, S>, null) }
             visitor = true
+
+            return this
         }
 
         fun updateInterval(updateInterval: Int): Builder<T> {
