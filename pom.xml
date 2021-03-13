@@ -16,19 +16,6 @@
         <junit.version>4.13.2</junit.version>
     </properties>
 
-    <distributionManagement>
-        <repository>
-            <id>releases</id>
-            <name>nukkitx-releases</name>
-            <url>https://repo.nukkitx.com/release</url>
-        </repository>
-        <snapshotRepository>
-            <id>snapshots</id>
-            <name>nukkitx-snapshots</name>
-            <url>https://repo.nukkitx.com/snapshot</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <repositories>
         <repository>
             <id>opencollab-repo-release</id>
@@ -51,6 +38,19 @@
             </snapshots>
         </repository>
     </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>releases</id>
+            <name>opencollab-releases</name>
+            <url>https://repo.opencollab.dev/maven-releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>opencollab-snapshots</name>
+            <url>https://repo.opencollab.dev/maven-snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <build>
         <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
