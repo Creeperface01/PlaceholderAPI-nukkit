@@ -1,12 +1,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val kotlinVersion = "1.4.21"
-val lombokVersion = "1.18.16"
-val junitVersion = "4.12"
-
 plugins {
-    kotlin("jvm") version "1.4.21"
-    id("org.jetbrains.dokka") version "1.4.20"
+    kotlin("jvm") version Kotlin.version
+    id("org.jetbrains.dokka") version Dokka.version
 }
 
 group = "com.creeperface.nukkit.placeholderapi"
@@ -30,14 +26,14 @@ tasks.withType<KotlinCompile> {
 }
 
 dependencies {
-    compileOnly(kotlin("stdlib-jdk8", kotlinVersion))
-    compileOnly(kotlin("reflect", kotlinVersion))
-    compileOnly("cn.nukkit:nukkit:1.0-SNAPSHOT")
-    compileOnly("org.projectlombok:lombok:$lombokVersion")
+    compileOnly(kotlin("stdlib-jdk8", Kotlin.version))
+    compileOnly(kotlin("reflect", Kotlin.version))
+    compileOnly("cn.nukkit:nukkit:${Nukkit.version}")
+    compileOnly("org.projectlombok:lombok:${Lombok.version}")
 
-    dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.4.20")
+    dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:${Dokka.version}")
 
-    annotationProcessor("org.projectlombok:lombok:$lombokVersion")
+    annotationProcessor("org.projectlombok:lombok:${Lombok.version}")
 
-    testImplementation("junit:junit:$junitVersion")
+    testImplementation("junit:junit:${JUnit.version}")
 }
