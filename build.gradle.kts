@@ -36,4 +36,5 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:${Lombok.version}")
 
     testImplementation("junit:junit:${JUnit.version}")
+    testCompileOnly("cn.nukkit:nukkit:${Nukkit.version}")
 }
