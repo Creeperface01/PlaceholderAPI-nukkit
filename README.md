@@ -1,21 +1,22 @@
 # Maven
 
 ```xml
-
 <repositories>
     <repository>
         <id>nukkitx-repo</id>
         <url>http://repo.nukkitx.com/main/</url>
     </repository>
 </repositories>
+```
 
+```xml
 <dependencies>
-<dependency>
-    <groupId>com.creeperface.nukkit.placeholderapi</groupId>
-    <artifactId>PlaceholderAPI</artifactId>
-    <version>1.4-SNAPSHOT</version>
-    <scope>provided</scope>
-</dependency>
+    <dependency>
+        <groupId>com.creeperface.nukkit.placeholderapi</groupId>
+        <artifactId>PlaceholderAPI</artifactId>
+        <version>1.4-SNAPSHOT</version>
+        <scope>provided</scope>
+    </dependency>
 </dependencies>
 ```
 
@@ -24,7 +25,7 @@
 ### Obtaining PlaceholderAPI instance
 
 ```java
-PlaceholderAPI api=PlaceholderAPI.getInstance();
+PlaceholderAPI api = PlaceholderAPI.getInstance();
 ```
 
 ```kotlin
@@ -35,13 +36,13 @@ val api = PlaceholderAPI.getInstance()
 
 ```java
 //player can be omitted unless it's a visitor based placeholder
-api.getValue("placeholder_name",player)
+api.getValue("placeholder_name", player);
 ```
 
 To automatically replace all placeholder in a string use translateString() method
 
 ```java
-String result=api.translateString(inputString,player);
+String result=api.translateString(inputString, player);
 ```
 
 For kotlin there's an extension function
@@ -61,8 +62,8 @@ supply player instance to get the value
 Simple example of static placeholder that returns current server tick:
 
 ```java
-api.builder("tick",Integer.class)
-        .loader(entry->Server.getInstance().getTick())
+api.builder("tick", Integer.class)
+        .loader(entry -> Server.getInstance().getTick())
         .build();
 ```
 
@@ -79,9 +80,9 @@ api.build<Int>("tick") {
 Simple example of visitor based placeholder that returns player name
 
 ```java
-api.builder("player_name",String.class)
-        .visitorLoader(entry->{
-        return entry.getPlayer().getName();
+api.builder("player_name", String.class)
+        .visitorLoader(entry -> {
+            return entry.getPlayer().getName();
         });
 ```
 
@@ -98,11 +99,11 @@ api.build<String>("player_name") {
 Builder contains a few other options
 
 ```java
-api.builder("tick",Integer.class)
-        .aliases("server_tick","servertick") //placeholder aliases
+api.builder("tick", Integer.class)
+        .aliases("server_tick", "servertick") //placeholder aliases
         .autoUpdate(true) //enables auto update that triggers registered update listeners, disabled by default
         .updateInterval(10) //interval of auto update or cache clearing, disabled by default - no cache
-        .loader(entry->Server.getInstance().getTick())
+        .loader(entry -> Server.getInstance().getTick())
         .build();
 ```
 
@@ -118,17 +119,17 @@ Simple example that returns player name and optionally converts it to lowercase 
 the `processParameters()` method that enables parameter processing
 
 ```java
-api.builder("player_name",String.class)
+api.builder("player_name", String.class)
         .processParameters(true)
-        .visitorLoader(entry->{
-        String name=entry.getPlayer().getName();
-
-        Parameter parameter=entry.getParameters().single();
-        if(parameter!=null&&parameter.getValue().equals("lc")){ //lowercase
-        name=name.toLowerCase();
-        }
-
-        return name;
+        .visitorLoader(entry -> {
+            String name = entry.getPlayer().getName();
+    
+            Parameter parameter = entry.getParameters().single();
+            if (parameter != null && parameter.getValue().equals("lc")) { //lowercase
+                name = name.toLowerCase();
+            }
+    
+            return name;
         });
 ```
 
