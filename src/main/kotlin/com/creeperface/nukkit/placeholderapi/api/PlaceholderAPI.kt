@@ -68,12 +68,12 @@ abstract class PlaceholderAPI internal constructor() {
     ) = getValue(key, visitor, defaultValue, params, GlobalScope.defaultContext)
 
     abstract fun getValue(
-            key: String,
-            visitor: Player? = null,
-            defaultValue: String? = key,
-            params: PlaceholderParameters = PlaceholderParameters.EMPTY,
-            vararg contexts: AnyContext = arrayOf(GlobalScope.defaultContext)
-    ): String?
+        key: String,
+        visitor: Player? = null,
+        defaultValue: String? = key,
+        params: PlaceholderParameters = PlaceholderParameters.EMPTY,
+        vararg contexts: AnyContext = arrayOf(GlobalScope.defaultContext)
+    ): String
 
     fun updatePlaceholder(key: String) = updatePlaceholder(key, null)
 
@@ -84,21 +84,30 @@ abstract class PlaceholderAPI internal constructor() {
     fun translateString(input: String) = translateString(input, null)
 
     fun translateString(
-            input: String,
-            visitor: Player? = null
+        input: String,
+        visitor: Player? = null
     ) = translateString(input, visitor, input.matchPlaceholders(), GlobalScope.defaultContext)
 
     fun translateString(
-            input: String,
-            visitor: Player? = null,
-            vararg contexts: AnyContext = arrayOf(GlobalScope.defaultContext)
+        input: String,
+        visitor: Player? = null,
+        vararg contexts: AnyContext = arrayOf(GlobalScope.defaultContext)
     ) = translateString(input, visitor, input.matchPlaceholders(), *contexts)
 
-    abstract fun translateString(input: String, visitor: Player?, matched: Collection<MatchedGroup>, vararg contexts: AnyContext): String
+    abstract fun translateString(
+        input: String,
+        visitor: Player?,
+        matched: Collection<MatchedGroup>,
+        vararg contexts: AnyContext = arrayOf(GlobalScope.defaultContext)
+    ): String
 
-    fun findPlaceholders(input: String, scope: AnyScope = GlobalScope) = findPlaceholders(input.matchPlaceholders(), scope)
+    fun findPlaceholders(input: String, scope: AnyScope = GlobalScope) =
+        findPlaceholders(input.matchPlaceholders(), scope)
 
-    abstract fun findPlaceholders(matched: Collection<MatchedGroup>, scope: AnyScope = GlobalScope): List<AnyPlaceholder>
+    abstract fun findPlaceholders(
+        matched: Collection<MatchedGroup>,
+        scope: AnyScope = GlobalScope
+    ): List<AnyPlaceholder>
 
     abstract fun formatTime(millis: Long): String
 

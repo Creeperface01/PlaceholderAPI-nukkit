@@ -78,50 +78,52 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
     }
 
     override fun <T : Any> staticPlaceholder(
-            name: String,
-            typeClass: KClass<T>,
-            loader: Loader<T>,
-            updateInterval: Int,
-            autoUpdate: Boolean,
-            processParameters: Boolean,
-            scope: AnyScopeClass,
-            vararg aliases: String) {
+        name: String,
+        typeClass: KClass<T>,
+        loader: Loader<T>,
+        updateInterval: Int,
+        autoUpdate: Boolean,
+        processParameters: Boolean,
+        scope: AnyScopeClass,
+        vararg aliases: String
+    ) {
         registerPlaceholder(
-                StaticPlaceHolder(
-                        name,
-                        updateInterval,
-                        autoUpdate,
-                        aliases.toSet(),
-                        processParameters,
-                        scope,
-                        typeClass,
-                        getFormatter(typeClass),
-                        loader
-                )
+            StaticPlaceHolder(
+                name,
+                updateInterval,
+                autoUpdate,
+                aliases.toSet(),
+                processParameters,
+                scope,
+                typeClass,
+                getFormatter(typeClass),
+                loader
+            )
         )
     }
 
     override fun <T : Any> visitorSensitivePlaceholder(
-            name: String,
-            typeClass: KClass<T>,
-            loader: Loader<T>,
-            updateInterval: Int,
-            autoUpdate: Boolean,
-            processParameters: Boolean,
-            scope: AnyScopeClass,
-            vararg aliases: String) {
+        name: String,
+        typeClass: KClass<T>,
+        loader: Loader<T>,
+        updateInterval: Int,
+        autoUpdate: Boolean,
+        processParameters: Boolean,
+        scope: AnyScopeClass,
+        vararg aliases: String
+    ) {
         registerPlaceholder(
-                VisitorSensitivePlaceholder(
-                        name,
-                        updateInterval,
-                        autoUpdate,
-                        aliases.toSet(),
-                        processParameters,
-                        scope,
-                        typeClass,
-                        getFormatter(typeClass),
-                        loader
-                )
+            VisitorSensitivePlaceholder(
+                name,
+                updateInterval,
+                autoUpdate,
+                aliases.toSet(),
+                processParameters,
+                scope,
+                typeClass,
+                getFormatter(typeClass),
+                loader
+            )
         )
     }
 
@@ -149,7 +151,17 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun getValue(key: String, visitor: Player?, defaultValue: String?, params: PlaceholderParameters, vararg contexts: AnyContext): String? {
+    override fun getValue(
+        key: String,
+        visitor: Player?,
+        defaultValue: String?,
+        params: PlaceholderParameters,
+        vararg contexts: AnyContext
+    ): String {
+        if (contexts.isEmpty()) {
+            return key
+        }
+
         val ref = Ref.ObjectRef<AnyContext>()
 
         //TODO: placeholder as a parameter (calculate nested placeholders)
@@ -161,7 +173,12 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
     }
 
 
-    override fun translateString(input: String, visitor: Player?, matched: Collection<MatchedGroup>, vararg contexts: AnyContext): String {
+    override fun translateString(
+        input: String,
+        visitor: Player?,
+        matched: Collection<MatchedGroup>,
+        vararg contexts: AnyContext
+    ): String {
         val builder = StringBuilder(input)
 
         var lengthDiff = 0
@@ -169,10 +186,8 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
         matched.forEach { group ->
             val replacement = getValue(group.value, visitor, null, group.params, *contexts)
 
-            replacement?.run {
-                builder.replace(lengthDiff + group.start, lengthDiff + group.end, replacement)
-                lengthDiff += replacement.length - (group.end - group.start)
-            }
+            builder.replace(lengthDiff + group.start, lengthDiff + group.end, replacement)
+            lengthDiff += replacement.length - (group.end - group.start)
         }
 
         return builder.toString()
@@ -190,7 +205,15 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
         return result
     }
 
-    private fun getPlaceholder(key: String, contexts: Array<AnyContext>, placeholderContext: Ref.ObjectRef<AnyContext>): AnyPlaceholder? {
+    private fun getPlaceholder(
+        key: String,
+        contexts: Array<AnyContext>,
+        placeholderContext: Ref.ObjectRef<AnyContext>
+    ): AnyPlaceholder? {
+        if (contexts.isEmpty()) {
+            return null
+        }
+
         if (contexts.size > 1 || !contexts[0].scope.global) {
             contexts@ for (context in contexts) {
                 var current = context
@@ -263,7 +286,8 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
         return placeholders
     }
 
-    override fun formatDate(millis: Long) = millis.formatAsTime("${configuration.dateFormat} ${configuration.timeFormat}")
+    override fun formatDate(millis: Long) =
+        millis.formatAsTime("${configuration.dateFormat} ${configuration.timeFormat}")
 
     override fun formatTime(millis: Long) = millis.formatAsTime(configuration.timeFormat)
 
