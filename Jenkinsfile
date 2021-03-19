@@ -14,7 +14,7 @@ pipeline {
             }
             post {
                 success {
-                    archiveArtifacts artifacts: 'target/PlaceholderAPI-*.jar', fingerprint: true
+                    archiveArtifacts artifacts: 'target/PlaceholderAPI-*-SNAPSHOT.jar', fingerprint: true
                 }
             }
         }
