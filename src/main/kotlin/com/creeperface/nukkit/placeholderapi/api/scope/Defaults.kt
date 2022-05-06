@@ -31,169 +31,169 @@ val PlayerChatEvent.context: Scope<PlayerChatEvent, ChatScope>.Context
 
 internal fun registerDefaultPlaceholders(api: PlaceholderAPIIml) {
     with(api) {
-        build<String>("player") {
+        build("player") {
             visitorLoader { player.name }
             aliases("playername")
         }
 
-        build<String>("player_displayname") {
+        build("player_displayname") {
             visitorLoader { player.displayName }
         }
 
-        build<UUID>("player_uuid") {
+        build("player_uuid") {
             visitorLoader { player.uniqueId }
         }
-        build<Int>("player_ping") {
+        build("player_ping") {
             visitorLoader { player.ping }
         }
-        build<String>("player_level") {
+        build("player_level") {
             visitorLoader { player.level?.name }
         }
-        build<Boolean>("player_can_fly") {
+        build("player_can_fly") {
             visitorLoader { player.adventureSettings.get(AdventureSettings.Type.ALLOW_FLIGHT) }
         }
-        build<Boolean>("player_flying") {
+        build("player_flying") {
             visitorLoader { player.adventureSettings.get(AdventureSettings.Type.FLYING) }
         }
 
-        build<Float>("player_health") {
+        build("player_health") {
             visitorLoader { player.health }
         }
-        build<Int>("player_max_health") {
+        build("player_max_health") {
             visitorLoader { player.maxHealth }
         }
-        build<Float>("player_saturation") {
+        build("player_saturation") {
             visitorLoader { player.foodData.foodSaturationLevel }
         }
-        build<Int>("player_food") {
+        build("player_food") {
             visitorLoader { player.foodData.level }
         }
-        build<String>("player_gamemode") {
+        build("player_gamemode") {
             visitorLoader { Server.getGamemodeString(player.gamemode) }
         }
 
-        build<Double>("player_x") {
+        build("player_x") {
             visitorLoader { player.x }
         }
-        build<Double>("player_y") {
+        build("player_y") {
             visitorLoader { player.y }
         }
-        build<Double>("player_z") {
+        build("player_z") {
             visitorLoader { player.z }
         }
-        build<String>("player_direction") {
+        build("player_direction") {
             visitorLoader { player.direction.name }
         }
-        build<Int>("player_exp") {
+        build("player_exp") {
             visitorLoader { player.experience }
         }
 
-        build<Int>("player_exp_to_next") {
+        build("player_exp_to_next") {
             visitorLoader { Player.calculateRequireExperience(player.experienceLevel + 1) }
         }
-        build<Int>("player_exp_level") {
+        build("player_exp_level") {
             visitorLoader { player.experienceLevel }
         }
-        build<Float>("player_speed") {
+        build("player_speed") {
             visitorLoader { player.movementSpeed }
         }
-        build<Int>("player_max_air") {
+        build("player_max_air") {
             visitorLoader { player.getDataPropertyInt(Entity.DATA_MAX_AIR) }
         }
-        build<Int>("player_remaining_air") {
+        build("player_remaining_air") {
             visitorLoader { player.getDataPropertyInt(Entity.DATA_AIR) }
         }
-        build<String>("player_item_in_hand") {
+        build("player_item_in_hand") {
             visitorLoader { player.inventory?.itemInHand?.name }
         }
 
         val server = this.server
         val runtime = Runtime.getRuntime()
 
-        build<Int>("server_online") {
+        build("server_online") {
             loader {
                 server.onlinePlayers.size
             }
         }
 
-        build<Int>("server_max_players") {
+        build("server_max_players") {
             loader {
                 server.maxPlayers
             }
         }
 
-        build<String>("server_motd") {
+        build("server_motd") {
             loader {
                 server.network.name
             }
         }
 
-        build<Double>("server_ram_used") {
+        build("server_ram_used") {
             loader {
                 (runtime.totalMemory() - runtime.freeMemory()).bytes2MB().round(configuration.coordsAccuracy)
             }
         }
 
-        build<Double>("server_ram_free") {
+        build("server_ram_free") {
             loader {
                 runtime.freeMemory().bytes2MB().round(configuration.coordsAccuracy)
             }
         }
 
-        build<Double>("server_ram_total") {
+        build("server_ram_total") {
             loader {
                 runtime.totalMemory().bytes2MB().round(configuration.coordsAccuracy)
             }
         }
 
-        build<Double>("server_ram_max") {
+        build("server_ram_max") {
             loader {
                 runtime.maxMemory().bytes2MB().round(configuration.coordsAccuracy)
             }
         }
 
-        build<Int>("server_cores") {
+        build("server_cores") {
             loader {
                 runtime.availableProcessors()
             }
         }
 
-        build<Float>("server_tps") {
+        build("server_tps") {
             loader {
                 server.ticksPerSecondAverage
             }
         }
 
-        build<Duration>("server_uptime") {
+        build("server_uptime") {
             loader {
                 Duration.ofMillis(System.currentTimeMillis() - Nukkit.START_TIME)
             }
         }
 
-        build<Date>("time") {
+        build("time") {
             loader { Date() }
         }
 
         //scoped
-        build<String>("message") {
+        build("message") {
             scopedLoader(ChatScope) {
                 contextVal.message
             }
         }
 
-        build<Player>("message_sender") {
+        build("message_sender") {
             scopedLoader(ChatScope) {
                 contextVal.player
             }
         }
 
-        build<String>("message") {
+        build("message") {
             scopedLoader(MessageScope) {
                 contextVal.message
             }
         }
 
-        build<Player>("message_sender") {
+        build("message_sender") {
             scopedLoader(MessageScope) {
                 contextVal.sender
             }

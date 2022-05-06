@@ -291,6 +291,10 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
 
     override fun formatTime(millis: Long) = millis.formatAsTime(configuration.timeFormat)
 
+    @Deprecated(
+        "formatBoolean() was replaced by a more generic function",
+        replaceWith = ReplaceWith("formatObject(value)")
+    )
     override fun formatBoolean(value: Boolean) = value.toFormatString()
 
     override fun formatObject(value: Any?): String {
