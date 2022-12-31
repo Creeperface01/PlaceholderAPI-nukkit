@@ -309,7 +309,7 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
     override fun <T : Any> registerFormatter(clazz: KClass<T>, formatFun: (T) -> String) {
         formatters[clazz] = format@{
             it?.let {
-                formatFun(it as T)
+                return@format formatFun(it as T)
             }
 
             return@format "null"
@@ -337,12 +337,26 @@ class PlaceholderAPIIml private constructor(plugin: PlaceholderPlugin) : API(), 
     }
 
     private fun registerDefaultFormatters() {
-        registerFormatter(Boolean::class) { formatBoolean(it) }
-        registerFormatter(Date::class) { formatDate(it) }
-        registerFormatter(Iterable::class) { it.joinToString(configuration.arraySeparator) }
-        registerFormatter(Array<Any?>::class) { it.joinToString(configuration.arraySeparator) }
-        registerFormatter(Player::class) { it.name }
-        registerFormatter(Item::class) { it.name }
-        registerFormatter(Block::class) { it.name }
+        registerFormatter(Boolean::class) {
+            formatBoolean(it)
+        }
+        registerFormatter(Date::class) {
+            formatDate(it)
+        }
+        registerFormatter(Iterable::class) {
+            it.joinToString(configuration.arraySeparator)
+        }
+        registerFormatter(Array<Any?>::class) {
+            it.joinToString(configuration.arraySeparator)
+        }
+        registerFormatter(Player::class) {
+            it.name
+        }
+        registerFormatter(Item::class) {
+            it.name
+        }
+        registerFormatter(Block::class) {
+            it.name
+        }
     }
 }

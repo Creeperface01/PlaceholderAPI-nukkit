@@ -1,12 +1,6 @@
 object Kotlin {
 
-    const val version = "1.7.0-Beta"
-
-}
-
-object Lombok {
-
-    const val version = "1.18.18"
+    const val version = "1.7.22"
 
 }
 
@@ -18,7 +12,7 @@ object Nukkit {
 
 object Dokka {
 
-    const val version = "1.4.20"
+    const val version = "1.7.20"
 
 }
 

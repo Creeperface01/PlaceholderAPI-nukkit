@@ -10,10 +10,6 @@ class PlaceholderPlugin : PluginBase() {
     private lateinit var api: PlaceholderAPIIml
 
     override fun onLoad() {
-//        if (!KotlinLibDownloader.check(this)) {
-//            throw PluginException("KotlinLib could not be found")
-//        }
-
         api = PlaceholderAPIIml.createInstance(this)
     }
 
