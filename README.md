@@ -3,8 +3,8 @@
 ```xml
 <repositories>
     <repository>
-        <id>nukkitx-repo</id>
-        <url>http://repo.nukkitx.com/main/</url>
+        <id>opencollab-repo-snapshot</id>
+        <url>https://repo.opencollab.dev/maven-snapshots</url>
     </repository>
 </repositories>
 ```
