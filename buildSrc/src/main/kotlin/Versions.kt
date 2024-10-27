@@ -1,6 +1,6 @@
 object Kotlin {
 
-    const val version = "1.7.22"
+    const val version = "2.0.21"
 
 }
 
